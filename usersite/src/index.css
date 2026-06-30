@@ -1,0 +1,71 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+*::-webkit-scrollbar {
+  display: none;
+}
+
+body {
+  @apply bg-night text-text-primary font-body antialiased;
+  transition: all 0.2s ease;
+}
+
+.glass-card {
+  background: rgba(13, 31, 60, 0.8);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  transition: all 0.2s ease;
+}
+
+.glass-card:hover {
+  border-color: rgba(79, 110, 247, 0.25);
+}
+
+.neon-glow {
+  box-shadow: 0 0 20px rgba(79, 110, 247, 0.4);
+}
+
+@keyframes pulse-live {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+.animate-pulse-live {
+  animation: pulse-live 1.5s ease-in-out infinite;
+}
+
+@keyframes ticker-scroll {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.ticker-track {
+  display: flex;
+  width: max-content;
+  animation: ticker-scroll 45s linear infinite;
+}
+
+.ticker-track:hover {
+  animation-play-state: paused;
+}
+
+@keyframes float-up {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+.safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.city-skyline-bg {
+  background:
+    radial-gradient(ellipse 100% 60% at 50% 100%, rgba(26, 58, 110, 0.5) 0%, transparent 60%),
+    linear-gradient(180deg, #050818 0%, #0a1628 50%, #050818 100%);
+}

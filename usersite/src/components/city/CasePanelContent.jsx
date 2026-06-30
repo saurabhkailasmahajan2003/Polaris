@@ -1,0 +1,67 @@
+import { useEffect, useState } from 'react';
+import { casesApi } from '../../lib/api';
+import { VERDICT_BORDERS, VERDICT_LABELS, TIMEFRAME_LABELS } from '../../lib/constants';
+
+export default function CasePanelContent({ caseId, onBack }) {
+  const [data, setData] = useState(null);
+
+  useEffect(() => {
+    casesApi.get(caseId).then(setData).catch(console.error);
+  }, [caseId]);
+
+  if (!data) {
+    return <p className="text-text-secondary text-sm p-6">Loading case...</p>;
+  }
+
+  const { case: caseDoc, verdict, rounds } = data;
+  const topAgents = verdict?.agentPositions?.slice(0, 3) ||
+    rounds?.find((r) => r.phase === 'round4')?.messages?.slice(0, 3) || [];
+
+  return (
+    <div className="h-full overflow-y-auto p-6">
+      <button onClick={onBack} className="text-primary text-sm hover:underline mb-4">← Back</button>
+      <h2 className="font-heading text-xl font-bold mb-2">{caseDoc.title}</h2>
+      <p className="text-text-secondary text-sm mb-6 line-clamp-3">{caseDoc.description}</p>
+
+      {verdict ? (
+        <>
+          <div className={`bg-city border border-white/5 border-l-4 ${VERDICT_BORDERS[verdict.decision]} rounded-xl p-5 mb-6`}>
+            <p className="text-xs text-text-secondary uppercase tracking-wider mb-1">Verdict</p>
+            <p className="font-medium">{verdict.statement}</p>
+            <p className="text-xs text-text-secondary mt-2">{VERDICT_LABELS[verdict.decision]}</p>
+          </div>
+          {verdict.consequences?.length > 0 && (
+            <div className="grid gap-3 mb-6">
+              {verdict.consequences.map((c) => (
+                <div key={c.timeframe} className="bg-city border border-white/5 rounded-lg p-3">
+                  <p className="text-xs text-primary font-mono mb-1">{TIMEFRAME_LABELS[c.timeframe]}</p>
+                  <p className="text-xs text-text-secondary">{c.socialImpact}</p>
+                </div>
+              ))}
+            </div>
+          )}
+        </>
+      ) : (
+        <div className="bg-primary/10 border border-primary/30 rounded-xl p-4 mb-6">
+          <p className="text-primary text-sm animate-pulse capitalize">
+            {caseDoc.currentPhase?.replace(/_/g, ' ')} — {caseDoc.currentAgent || 'processing'}
+          </p>
+        </div>
+      )}
+
+      {topAgents.length > 0 && (
+        <>
+          <h3 className="font-heading text-sm font-semibold mb-3">Key Positions</h3>
+          <div className="space-y-2">
+            {topAgents.map((a) => (
+              <div key={a.agentId || a.agentName} className="bg-city border border-white/5 rounded-lg p-3">
+                <p className="text-sm text-primary font-medium">{a.agentName}</p>
+                <p className="text-xs text-text-secondary mt-1">{(a.finalPosition || a.position || '').slice(0, 120)}</p>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}

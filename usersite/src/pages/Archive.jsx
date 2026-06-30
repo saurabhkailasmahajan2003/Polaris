@@ -1,0 +1,76 @@
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import AppLayout from '../components/layout/AppLayout';
+import CaseCard from '../components/ui/CaseCard';
+import { archiveApi } from '../lib/api';
+import { DEMO_ARCHIVE } from '../lib/constants';
+
+export default function Archive() {
+  const [archives, setArchives] = useState(DEMO_ARCHIVE);
+  const [view, setView] = useState('grid');
+  const [search, setSearch] = useState('');
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    archiveApi.list({ search }).then((data) => {
+      if (data.archives?.length) {
+        setArchives(data.archives.map((a, i) => ({
+          id: a.caseId?.slice(-2) || DEMO_ARCHIVE[i]?.id,
+          title: a.title,
+          verdict: a.verdict,
+          date: new Date(a.completedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+          confidence: 80,
+          agents: a.participatingAgents?.length || 7,
+          caseId: a.caseId,
+        })));
+      }
+    }).catch(() => {});
+  }, [search]);
+
+  return (
+    <AppLayout showWorldState={false} showTicker={false}>
+      <div className="p-4 md:p-8 max-w-6xl mx-auto">
+        <header className="mb-6 md:mb-8 hidden md:block">
+          <h1 className="font-heading text-2xl font-bold">CITY ARCHIVE</h1>
+          <p className="text-text-secondary text-sm mt-1">Explore completed cases and verdicts</p>
+        </header>
+
+        <div className="flex flex-wrap gap-3 mb-8">
+          <input
+            placeholder="Search archive..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="glass-card rounded-lg px-4 py-2 text-sm flex-1 min-w-[180px] bg-transparent"
+          />
+          <select className="glass-card rounded-lg px-3 py-2 text-sm bg-transparent"><option>All Categories</option></select>
+          <select className="glass-card rounded-lg px-3 py-2 text-sm bg-transparent"><option>All Verdicts</option></select>
+          <select className="glass-card rounded-lg px-3 py-2 text-sm bg-transparent"><option>All Agents</option></select>
+          <div className="flex rounded-lg border border-white/10 overflow-hidden">
+            <button type="button" onClick={() => setView('grid')} className={`px-3 py-2 text-sm ${view === 'grid' ? 'bg-primary/20 text-primary' : 'text-text-secondary'}`}>Grid</button>
+            <button type="button" onClick={() => setView('list')} className={`px-3 py-2 text-sm ${view === 'list' ? 'bg-primary/20 text-primary' : 'text-text-secondary'}`}>List</button>
+          </div>
+        </div>
+
+        <div className={view === 'grid' ? 'grid sm:grid-cols-2 lg:grid-cols-4 gap-4' : 'space-y-3'}>
+          {archives.map((item) => (
+            <CaseCard
+              key={item.id || item.caseId}
+              caseNum={item.id}
+              title={item.title}
+              verdict={item.verdict}
+              date={item.date}
+              confidence={item.confidence || 84}
+              agents={item.agents || 7}
+              agentIds={['economist', 'legal_expert', 'ethics_expert', 'fact_checker', 'judge']}
+              onClick={() => navigate(`/cases/${item.caseId || item.id}?mode=quick`)}
+            />
+          ))}
+        </div>
+
+        <button type="button" className="w-full mt-8 py-3 border border-white/20 rounded-xl text-sm font-medium hover:border-primary/50 hover:text-primary transition-all">
+          Load More Cases
+        </button>
+      </div>
+    </AppLayout>
+  );
+}
