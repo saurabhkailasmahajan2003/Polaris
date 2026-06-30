@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useSearchParams, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import AppLayout from '../components/layout/AppLayout';
+import PageShell, { ScrollTabs, TabButton } from '../components/layout/PageShell';
 import LiveBadge from '../components/ui/LiveBadge';
 import CategoryBadge from '../components/ui/CategoryBadge';
 import VerdictBadge from '../components/ui/VerdictBadge';
@@ -24,7 +25,7 @@ const DEMO_POSITIONS = [
 
 function QuickView({ caseDoc, verdict }) {
   return (
-    <div className="grid lg:grid-cols-3 gap-6">
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
       <div className="lg:col-span-2 space-y-6">
         <div className="glass-card rounded-xl overflow-hidden">
           <div className="bg-gradient-to-r from-warning/30 to-warning/10 px-5 py-3 border-b border-warning/20 flex items-center gap-2">
@@ -108,9 +109,9 @@ function FullView({ rounds, activeRound, setActiveRound, typingAgent }) {
   ];
 
   return (
-    <div className="grid lg:grid-cols-3 gap-6">
-      <div className="lg:col-span-2">
-        <div className="flex gap-1 mb-6 overflow-x-auto pb-2">
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
+      <div className="lg:col-span-2 min-w-0">
+        <div className="flex gap-1 mb-4 sm:mb-6 overflow-x-auto pb-2 -mx-1 px-1 overscroll-x-contain">
           {ROUNDS.map((r) => (
             <button
               key={r}
@@ -189,35 +190,29 @@ export default function CaseView() {
   const isLive = caseDoc.status === 'processing';
 
   return (
-    <AppLayout>
-      <div className="p-6 lg:p-8 max-w-6xl mx-auto">
-        <header className="mb-6">
-          <div className="flex items-center gap-3 mb-2">
-            <span className="text-xs font-mono text-text-muted">CASE #{id?.slice(-2) || '37'}</span>
+    <AppLayout showWorldState={false} showTicker={false}>
+      <PageShell maxWidth="max-w-6xl" className="!pt-0 sm:!pt-0">
+        <header className="mb-4 md:mb-6 px-0 pt-0">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-2">
+            <span className="text-[10px] sm:text-xs font-mono text-text-muted">CASE #{id?.slice(-2) || '37'}</span>
             {isLive && <LiveBadge />}
           </div>
-          <h1 className="font-heading text-2xl md:text-3xl font-bold">{caseDoc.title}</h1>
-          <div className="flex flex-wrap gap-2 mt-3">
+          <h1 className="font-heading text-lg sm:text-2xl md:text-3xl font-bold leading-tight">{caseDoc.title}</h1>
+          <div className="flex flex-wrap gap-1.5 sm:gap-2 mt-2 sm:mt-3">
             <CategoryBadge category={caseDoc.category || 'economy'} />
-            <span className="text-xs font-mono text-text-muted px-2 py-1 rounded bg-white/5">Proposed by 12,842 citizens</span>
-            <span className="text-xs font-mono text-text-muted px-2 py-1 rounded bg-white/5">Deployed: May 12, 2024</span>
+            <span className="text-[10px] sm:text-xs font-mono text-text-muted px-2 py-1 rounded bg-white/5">12,842 citizens</span>
+            <span className="text-[10px] sm:text-xs font-mono text-text-muted px-2 py-1 rounded bg-white/5 hidden sm:inline">May 12, 2024</span>
           </div>
         </header>
 
-        <div className="flex gap-2 mb-8 border-b border-white/[0.06] pb-px">
+        <ScrollTabs>
           {MODES.map((m) => (
-            <button
-              key={m}
-              type="button"
-              onClick={() => setMode(m)}
-              className={`px-4 py-2 text-sm font-medium capitalize border-b-2 -mb-px transition-all ${
-                mode === m ? 'border-primary text-primary' : 'border-transparent text-text-secondary'
-              }`}
-            >
-              {m === 'quick' ? 'Quick Mode' : m === 'summary' ? 'Summary Mode' : 'Full Case Mode'}
-            </button>
+            <TabButton key={m} active={mode === m} onClick={() => setMode(m)}>
+              {m === 'quick' ? 'Quick' : m === 'summary' ? 'Summary' : 'Full Case'}
+              <span className="hidden sm:inline">{m === 'quick' ? ' Mode' : m === 'summary' ? ' Mode' : ' Mode'}</span>
+            </TabButton>
           ))}
-        </div>
+        </ScrollTabs>
 
         <AnimatePresence mode="wait">
           <motion.div key={mode} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
@@ -226,7 +221,7 @@ export default function CaseView() {
             {mode === 'full' && <FullView rounds={rounds} activeRound={activeRound} setActiveRound={setActiveRound} typingAgent={typingAgent} />}
           </motion.div>
         </AnimatePresence>
-      </div>
+      </PageShell>
     </AppLayout>
   );
 }

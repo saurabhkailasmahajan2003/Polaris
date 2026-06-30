@@ -1,4 +1,5 @@
 import AppLayout from '../components/layout/AppLayout';
+import PageShell from '../components/layout/PageShell';
 
 export default function HowItWorks() {
   const steps = [
@@ -9,22 +10,20 @@ export default function HowItWorks() {
   ];
 
   return (
-    <AppLayout>
-      <div className="p-6 lg:p-8 max-w-3xl mx-auto">
-        <h1 className="font-heading text-2xl font-bold mb-2">How It Works</h1>
-        <p className="text-text-secondary text-sm mb-10">The Polaris deliberation pipeline</p>
-        <div className="space-y-6">
+    <AppLayout showWorldState={false} showTicker={false}>
+      <PageShell title="How It Works" subtitle="The Polaris deliberation pipeline" maxWidth="max-w-3xl">
+        <div className="space-y-4 sm:space-y-6">
           {steps.map((s) => (
-            <div key={s.n} className="glass-card rounded-xl p-6 flex gap-6">
-              <span className="font-heading text-3xl font-bold text-primary/40">{s.n}</span>
-              <div>
-                <h3 className="font-heading font-semibold text-lg">{s.title}</h3>
-                <p className="text-sm text-text-secondary mt-1">{s.desc}</p>
+            <div key={s.n} className="glass-card rounded-xl p-4 sm:p-6 flex gap-4 sm:gap-6">
+              <span className="font-heading text-2xl sm:text-3xl font-bold text-primary/40 shrink-0">{s.n}</span>
+              <div className="min-w-0">
+                <h3 className="font-heading font-semibold text-base sm:text-lg">{s.title}</h3>
+                <p className="text-xs sm:text-sm text-text-secondary mt-1 leading-relaxed">{s.desc}</p>
               </div>
             </div>
           ))}
         </div>
-      </div>
+      </PageShell>
     </AppLayout>
   );
 }

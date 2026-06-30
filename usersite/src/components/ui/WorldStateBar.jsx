@@ -41,7 +41,7 @@ export default function WorldStateBar() {
   }, []);
 
   return (
-    <div className="border-b border-white/[0.06] bg-surface/60 backdrop-blur-md px-4 py-2">
+    <div className="border-b border-white/[0.06] bg-surface/60 backdrop-blur-md px-3 sm:px-4 py-2 hidden md:block">
       <div className="flex items-center gap-2 mb-2">
         <span className="text-[9px] uppercase tracking-[0.2em] text-primary font-mono">World State</span>
         <div className="h-px flex-1 bg-gradient-to-r from-primary/30 to-transparent" />

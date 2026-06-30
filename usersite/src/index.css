@@ -11,8 +11,12 @@
 }
 
 body {
-  @apply bg-night text-text-primary font-body antialiased;
+  @apply bg-night text-text-primary font-body antialiased overflow-x-hidden;
   transition: all 0.2s ease;
+}
+
+html {
+  overflow-x: hidden;
 }
 
 .glass-card {

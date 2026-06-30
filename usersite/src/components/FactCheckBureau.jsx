@@ -11,7 +11,7 @@ export default function FactCheckBureau({ onClose, onOpenCase }) {
   }, []);
 
   return (
-    <div className="h-full overflow-y-auto p-6">
+    <div className="h-full overflow-y-auto p-4 sm:p-6">
       <div className="flex justify-between items-center mb-2">
         <div>
           <p className="text-[10px] uppercase tracking-widest text-primary font-mono mb-1">Institution</p>

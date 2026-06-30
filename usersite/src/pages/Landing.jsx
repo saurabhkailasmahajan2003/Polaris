@@ -36,7 +36,7 @@ export default function Landing() {
 
   return (
     <div className="min-h-screen flex flex-col bg-night relative">
-      <nav className="relative z-20 flex items-center justify-between px-6 lg:px-12 py-5 border-b border-white/[0.06]">
+      <nav className="relative z-20 flex items-center justify-between px-4 sm:px-6 lg:px-12 py-4 sm:py-5 border-b border-white/[0.06]">
         <Link to="/" className="flex items-center gap-2 font-heading font-bold text-lg">
           <span>🌐</span> Polaris
         </Link>
@@ -52,11 +52,11 @@ export default function Landing() {
         </button>
       </nav>
 
-      <section className="relative flex-1 flex flex-col items-center justify-center px-6 py-20 text-center overflow-hidden">
+      <section className="relative flex-1 flex flex-col items-center justify-center px-4 sm:px-6 py-12 sm:py-20 text-center overflow-hidden">
         <CityscapeHero />
         <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }} className="relative z-10 max-w-4xl">
-          <h1 className="font-heading text-6xl md:text-7xl font-bold mb-6 tracking-tight">Polaris</h1>
-          <p className="text-lg md:text-xl text-text-secondary max-w-2xl mx-auto leading-relaxed mb-10">
+          <h1 className="font-heading text-4xl sm:text-6xl md:text-7xl font-bold mb-4 sm:mb-6 tracking-tight">Polaris</h1>
+          <p className="text-base sm:text-lg md:text-xl text-text-secondary max-w-2xl mx-auto leading-relaxed mb-8 sm:mb-10 px-2">
             A living AI civilization where expert agents judge real-world events without corruption, bias, or politics.
           </p>
           <div className="flex flex-wrap gap-4 justify-center">
@@ -73,7 +73,7 @@ export default function Landing() {
           initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3, duration: 0.6 }}
-          className="relative z-10 grid md:grid-cols-3 gap-6 max-w-5xl w-full mt-20 px-4"
+          className="relative z-10 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6 max-w-5xl w-full mt-12 sm:mt-20 px-2 sm:px-4"
         >
           {FEATURES.map((f) => (
             <div key={f.title} className="glass-card rounded-2xl p-6 text-left hover:neon-glow transition-all">

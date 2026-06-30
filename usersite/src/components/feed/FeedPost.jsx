@@ -70,7 +70,7 @@ export default function FeedPost({
   return (
     <article className="bg-night border-b border-white/[0.08]">
       {/* Post header */}
-      <div className="flex items-center gap-3 px-3 py-2.5">
+      <div className="flex items-center gap-2 sm:gap-3 px-3 py-2.5 flex-wrap">
         <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-xs font-bold shrink-0">
           P
         </div>
@@ -78,7 +78,7 @@ export default function FeedPost({
           <p className="text-sm font-semibold leading-tight truncate">{username}</p>
           <p className="text-[11px] text-text-muted truncate">{post.location || 'Public Square'}</p>
         </div>
-        <CategoryBadge category={post.category} />
+        <CategoryBadge category={post.category} className="shrink-0 max-w-[40%] truncate" />
         <button type="button" className="text-text-primary p-1" aria-label="More options">
           <svg viewBox="0 0 24 24" className="w-5 h-5" fill="currentColor">
             <circle cx="12" cy="5" r="1.5" />

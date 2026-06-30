@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AppLayout from '../components/layout/AppLayout';
+import PageShell from '../components/layout/PageShell';
 import CaseCard from '../components/ui/CaseCard';
 import { archiveApi } from '../lib/api';
 import { DEMO_ARCHIVE } from '../lib/constants';
@@ -29,29 +30,27 @@ export default function Archive() {
 
   return (
     <AppLayout showWorldState={false} showTicker={false}>
-      <div className="p-4 md:p-8 max-w-6xl mx-auto">
-        <header className="mb-6 md:mb-8 hidden md:block">
-          <h1 className="font-heading text-2xl font-bold">CITY ARCHIVE</h1>
-          <p className="text-text-secondary text-sm mt-1">Explore completed cases and verdicts</p>
-        </header>
-
-        <div className="flex flex-wrap gap-3 mb-8">
+      <PageShell title="City Archive" subtitle="Explore completed cases and verdicts">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 mb-6 md:mb-8">
           <input
             placeholder="Search archive..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="glass-card rounded-lg px-4 py-2 text-sm flex-1 min-w-[180px] bg-transparent"
+            className="glass-card rounded-lg px-3 py-2.5 text-sm bg-transparent w-full sm:col-span-2"
           />
-          <select className="glass-card rounded-lg px-3 py-2 text-sm bg-transparent"><option>All Categories</option></select>
-          <select className="glass-card rounded-lg px-3 py-2 text-sm bg-transparent"><option>All Verdicts</option></select>
-          <select className="glass-card rounded-lg px-3 py-2 text-sm bg-transparent"><option>All Agents</option></select>
-          <div className="flex rounded-lg border border-white/10 overflow-hidden">
-            <button type="button" onClick={() => setView('grid')} className={`px-3 py-2 text-sm ${view === 'grid' ? 'bg-primary/20 text-primary' : 'text-text-secondary'}`}>Grid</button>
-            <button type="button" onClick={() => setView('list')} className={`px-3 py-2 text-sm ${view === 'list' ? 'bg-primary/20 text-primary' : 'text-text-secondary'}`}>List</button>
+          <select className="glass-card rounded-lg px-3 py-2.5 text-sm bg-transparent w-full"><option>All Categories</option></select>
+          <select className="glass-card rounded-lg px-3 py-2.5 text-sm bg-transparent w-full"><option>All Verdicts</option></select>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-2 mb-6">
+          <select className="glass-card rounded-lg px-3 py-2 text-sm bg-transparent flex-1 min-w-[120px] sm:flex-none"><option>All Agents</option></select>
+          <div className="flex rounded-lg border border-white/10 overflow-hidden ml-auto">
+            <button type="button" onClick={() => setView('grid')} className={`px-3 py-2 text-xs sm:text-sm touch-manipulation ${view === 'grid' ? 'bg-primary/20 text-primary' : 'text-text-secondary'}`}>Grid</button>
+            <button type="button" onClick={() => setView('list')} className={`px-3 py-2 text-xs sm:text-sm touch-manipulation ${view === 'list' ? 'bg-primary/20 text-primary' : 'text-text-secondary'}`}>List</button>
           </div>
         </div>
 
-        <div className={view === 'grid' ? 'grid sm:grid-cols-2 lg:grid-cols-4 gap-4' : 'space-y-3'}>
+        <div className={view === 'grid' ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4' : 'space-y-3'}>
           {archives.map((item) => (
             <CaseCard
               key={item.id || item.caseId}
@@ -67,10 +66,10 @@ export default function Archive() {
           ))}
         </div>
 
-        <button type="button" className="w-full mt-8 py-3 border border-white/20 rounded-xl text-sm font-medium hover:border-primary/50 hover:text-primary transition-all">
+        <button type="button" className="w-full mt-6 sm:mt-8 py-3 border border-white/20 rounded-xl text-sm font-medium hover:border-primary/50 hover:text-primary transition-all touch-manipulation">
           Load More Cases
         </button>
-      </div>
+      </PageShell>
     </AppLayout>
   );
 }

@@ -34,27 +34,31 @@ export default function CaseCard({ caseNum, title, verdict, date, confidence, ag
 
 export function EventCard({ event, onVote, voting }) {
   return (
-    <div className="glass-card rounded-xl p-4 flex gap-4 hover:border-primary/30 transition-all">
+    <div className="glass-card rounded-xl p-3 sm:p-4 flex flex-col sm:flex-row gap-3 sm:gap-4 hover:border-primary/30 transition-all">
       {event.image && (
-        <img src={event.image} alt="" className="w-24 h-20 object-cover rounded-lg shrink-0 hidden sm:block" />
+        <img src={event.image} alt="" className="w-full sm:w-24 h-36 sm:h-20 object-cover rounded-lg shrink-0" />
       )}
-      <div className="flex-1 min-w-0">
-        <CategoryBadge category={event.category} className="mb-2" />
-        <h3 className="font-heading font-semibold text-sm">{event.title}</h3>
-        <p className="text-xs text-text-muted mt-1 line-clamp-2">{event.description}</p>
-      </div>
-      <div className="flex flex-col items-end justify-between shrink-0">
-        <span className="text-sm font-mono text-text-secondary">{event.voteCount?.toLocaleString?.() || event.votes?.toLocaleString?.()} votes</span>
-        {onVote && (
-          <button
-            type="button"
-            onClick={() => onVote(event._id || event.id)}
-            disabled={voting}
-            className="px-4 py-1.5 text-xs font-medium border border-primary text-primary rounded-lg hover:bg-primary/10 transition-all disabled:opacity-50"
-          >
-            Vote
-          </button>
-        )}
+      <div className="flex-1 min-w-0 flex flex-col sm:flex-row gap-3">
+        <div className="flex-1 min-w-0">
+          <CategoryBadge category={event.category} className="mb-2" />
+          <h3 className="font-heading font-semibold text-sm line-clamp-2">{event.title}</h3>
+          <p className="text-xs text-text-muted mt-1 line-clamp-2">{event.description}</p>
+        </div>
+        <div className="flex sm:flex-col items-center sm:items-end justify-between sm:justify-between shrink-0 gap-2">
+          <span className="text-xs sm:text-sm font-mono text-text-secondary">
+            {event.voteCount?.toLocaleString?.() || event.votes?.toLocaleString?.()} votes
+          </span>
+          {onVote && (
+            <button
+              type="button"
+              onClick={() => onVote(event._id || event.id)}
+              disabled={voting}
+              className="px-4 py-2 sm:py-1.5 text-xs font-medium border border-primary text-primary rounded-lg hover:bg-primary/10 transition-all disabled:opacity-50 touch-manipulation w-full sm:w-auto"
+            >
+              Vote
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );

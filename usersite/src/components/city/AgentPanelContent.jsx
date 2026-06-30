@@ -11,7 +11,7 @@ export default function AgentPanelContent({ agentId, onBack }) {
   if (!agent) return <p className="text-text-secondary text-sm p-6">Loading agent...</p>;
 
   return (
-    <div className="h-full overflow-y-auto p-6">
+    <div className="h-full overflow-y-auto p-4 sm:p-6">
       <button onClick={onBack} className="text-primary text-sm hover:underline mb-4">← Back</button>
       <div className="flex items-center gap-3 mb-4">
         <span className="text-4xl">{agent.avatar}</span>

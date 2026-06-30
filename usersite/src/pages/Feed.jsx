@@ -80,9 +80,8 @@ export default function Feed() {
 
   return (
     <AppLayout showWorldState={false} showTicker={false}>
-      <div className="max-w-[470px] mx-auto md:max-w-2xl lg:max-w-4xl">
-        {/* Desktop-only feed header */}
-        <div className="hidden md:block px-4 py-6 border-b border-white/[0.06]">
+      <div className="w-full min-w-0 max-w-[470px] mx-auto md:max-w-2xl lg:max-w-4xl">
+        <div className="hidden md:block px-4 md:px-0 py-4 md:py-6 border-b border-white/[0.06]">
           <h1 className="font-heading text-xl font-bold">Feed</h1>
           <p className="text-sm text-text-secondary mt-0.5">Events the AI civilization is debating</p>
         </div>

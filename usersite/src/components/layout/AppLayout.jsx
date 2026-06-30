@@ -72,7 +72,7 @@ export default function AppLayout({
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.2 }}
-            className={`flex-1 overflow-y-auto min-h-0 md:pt-0 md:pb-0 ${mobilePadTop} ${mobilePadBottom}`}
+            className={`flex-1 overflow-y-auto overflow-x-hidden min-h-0 min-w-0 ${mobilePadTop} ${mobilePadBottom}`}
           >
             {children}
           </motion.main>

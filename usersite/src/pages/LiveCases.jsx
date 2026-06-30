@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import AppLayout from '../components/layout/AppLayout';
+import PageShell from '../components/layout/PageShell';
 import LiveBadge from '../components/ui/LiveBadge';
 import CategoryBadge from '../components/ui/CategoryBadge';
 import { casesApi } from '../lib/api';
@@ -19,28 +20,31 @@ export default function LiveCases() {
 
   return (
     <AppLayout showWorldState={false} showTicker={false}>
-      <div className="p-4 md:p-8 max-w-5xl mx-auto">
-        <header className="mb-6 md:mb-8 hidden md:block">
-          <h1 className="font-heading text-2xl font-bold">LIVE CASES</h1>
-          <p className="text-text-secondary text-sm mt-1">Cases currently under AI deliberation</p>
-        </header>
-
-        <section className="mb-10">
-          <h2 className="text-xs font-mono uppercase tracking-widest text-text-muted mb-4 flex items-center gap-2">
+      <PageShell title="Live Cases" subtitle="Cases currently under AI deliberation">
+        <section className="mb-8 md:mb-10">
+          <h2 className="text-[10px] sm:text-xs font-mono uppercase tracking-widest text-text-muted mb-3 sm:mb-4 flex items-center gap-2">
             <LiveBadge /> Active
           </h2>
           <div className="space-y-3">
             {live.length === 0 && <p className="text-text-muted text-sm">No active cases</p>}
             {live.map((c) => (
-              <Link key={c._id} to={`/cases/${c._id}`} className="glass-card rounded-xl p-5 block hover:neon-glow transition-all group">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <div className="flex items-center gap-2 mb-1">
+              <Link
+                key={c._id}
+                to={`/cases/${c._id}`}
+                className="glass-card rounded-xl p-4 sm:p-5 block hover:neon-glow transition-all group touch-manipulation"
+              >
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2">
+                  <div className="min-w-0">
+                    <div className="flex flex-wrap items-center gap-2 mb-1">
                       <LiveBadge />
                       <CategoryBadge category={c.category} />
                     </div>
-                    <h3 className="font-heading font-semibold group-hover:text-primary transition-colors">{c.title}</h3>
-                    <p className="text-xs text-text-muted mt-2 capitalize">{c.currentPhase?.replace(/_/g, ' ')} {c.currentAgent && `• ${c.currentAgent}`}</p>
+                    <h3 className="font-heading font-semibold text-sm sm:text-base group-hover:text-primary transition-colors line-clamp-2">
+                      {c.title}
+                    </h3>
+                    <p className="text-xs text-text-muted mt-2 capitalize line-clamp-1">
+                      {c.currentPhase?.replace(/_/g, ' ')} {c.currentAgent && `• ${c.currentAgent}`}
+                    </p>
                   </div>
                 </div>
               </Link>
@@ -50,17 +54,21 @@ export default function LiveCases() {
 
         {completed.length > 0 && (
           <section>
-            <h2 className="text-xs font-mono uppercase tracking-widest text-text-muted mb-4">Completed</h2>
+            <h2 className="text-[10px] sm:text-xs font-mono uppercase tracking-widest text-text-muted mb-3 sm:mb-4">Completed</h2>
             <div className="space-y-3">
               {completed.map((c) => (
-                <Link key={c._id} to={`/cases/${c._id}`} className="glass-card rounded-xl p-4 block hover:border-primary/30 transition-all">
-                  <h3 className="font-medium text-sm">{c.title}</h3>
+                <Link
+                  key={c._id}
+                  to={`/cases/${c._id}`}
+                  className="glass-card rounded-xl p-4 block hover:border-primary/30 transition-all touch-manipulation"
+                >
+                  <h3 className="font-medium text-sm line-clamp-2">{c.title}</h3>
                 </Link>
               ))}
             </div>
           </section>
         )}
-      </div>
+      </PageShell>
     </AppLayout>
   );
 }

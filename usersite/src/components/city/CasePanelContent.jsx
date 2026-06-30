@@ -18,7 +18,7 @@ export default function CasePanelContent({ caseId, onBack }) {
     rounds?.find((r) => r.phase === 'round4')?.messages?.slice(0, 3) || [];
 
   return (
-    <div className="h-full overflow-y-auto p-6">
+    <div className="h-full overflow-y-auto p-4 sm:p-6">
       <button onClick={onBack} className="text-primary text-sm hover:underline mb-4">← Back</button>
       <h2 className="font-heading text-xl font-bold mb-2">{caseDoc.title}</h2>
       <p className="text-text-secondary text-sm mb-6 line-clamp-3">{caseDoc.description}</p>

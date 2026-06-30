@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import AppLayout from '../components/layout/AppLayout';
+import PageShell, { ScrollTabs, TabButton } from '../components/layout/PageShell';
 import CategoryBadge from '../components/ui/CategoryBadge';
 import { EventCard } from '../components/ui/CaseCard';
 import { eventsApi, votesApi } from '../lib/api';
@@ -8,9 +9,14 @@ import { DEMO_EVENTS } from '../lib/constants';
 
 const RANK_STYLES = ['border-warning shadow-[0_0_20px_rgba(245,158,11,0.3)]', 'border-gray-400/50', 'border-amber-700/50'];
 const RANK_LABELS = ['🥇', '🥈', '🥉'];
+const TABS = [
+  { id: 'trending_events', label: 'Trending', full: 'Trending Events' },
+  { id: 'top_voted', label: 'Top Voted', full: 'Top Voted' },
+  { id: 'my_votes', label: 'My Votes', full: 'My Votes' },
+];
 
 export default function PublicSquare() {
-  const [tab, setTab] = useState('trending');
+  const [tab, setTab] = useState('trending_events');
   const [events, setEvents] = useState(DEMO_EVENTS);
   const [voting, setVoting] = useState(null);
   const [search, setSearch] = useState('');
@@ -36,29 +42,23 @@ export default function PublicSquare() {
 
   return (
     <AppLayout showWorldState={false} showTicker={false}>
-      <div className="p-4 md:p-8 max-w-6xl mx-auto">
-        <header className="mb-6 md:mb-8 hidden md:block">
-          <h1 className="font-heading text-2xl font-bold tracking-wide">PUBLIC SQUARE</h1>
-          <p className="text-text-secondary text-sm mt-1">Vote on real-world events to bring them into Polaris</p>
-        </header>
-
-        <div className="flex gap-2 mb-8 border-b border-white/[0.06] pb-px">
-          {['Trending Events', 'Top Voted', 'My Votes'].map((t) => (
-            <button
-              key={t}
-              type="button"
-              onClick={() => setTab(t.toLowerCase().replace(' ', '_'))}
-              className={`px-4 py-2 text-sm font-medium border-b-2 transition-all -mb-px ${
-                tab === t.toLowerCase().replace(' ', '_') ? 'border-primary text-primary' : 'border-transparent text-text-secondary hover:text-text-primary'
-              }`}
-            >
-              {t}
-            </button>
+      <PageShell
+        title="Public Square"
+        subtitle="Vote on real-world events to bring them into Polaris"
+      >
+        <ScrollTabs>
+          {TABS.map((t) => (
+            <TabButton key={t.id} active={tab === t.id} onClick={() => setTab(t.id)}>
+              <span className="sm:hidden">{t.label}</span>
+              <span className="hidden sm:inline">{t.full}</span>
+            </TabButton>
           ))}
-        </div>
+        </ScrollTabs>
 
-        <h2 className="text-xs font-mono uppercase tracking-widest text-text-muted mb-4">Top 3 Entering Polaris Today</h2>
-        <div className="grid md:grid-cols-3 gap-4 mb-10">
+        <h2 className="text-[10px] sm:text-xs font-mono uppercase tracking-widest text-text-muted mb-3 sm:mb-4">
+          Top 3 Entering Polaris Today
+        </h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4 mb-8 md:mb-10">
           {top3.map((event, i) => (
             <motion.div
               key={event._id || event.id}
@@ -67,14 +67,14 @@ export default function PublicSquare() {
               transition={{ delay: i * 0.1 }}
               className={`glass-card rounded-xl overflow-hidden border-2 ${RANK_STYLES[i]}`}
             >
-              <div className="relative h-32">
+              <div className="relative h-28 sm:h-32">
                 <img src={event.image || DEMO_EVENTS[i]?.image} alt="" className="w-full h-full object-cover opacity-80" />
-                <span className="absolute top-2 left-2 text-2xl">{RANK_LABELS[i]}</span>
+                <span className="absolute top-2 left-2 text-xl sm:text-2xl">{RANK_LABELS[i]}</span>
                 <CategoryBadge category={event.category} className="absolute top-2 right-2" />
               </div>
-              <div className="p-4">
-                <h3 className="font-heading font-semibold text-sm">{event.title}</h3>
-                <p className="text-sm font-mono text-primary mt-2 flex items-center gap-1">
+              <div className="p-3 sm:p-4">
+                <h3 className="font-heading font-semibold text-sm line-clamp-2">{event.title}</h3>
+                <p className="text-xs sm:text-sm font-mono text-primary mt-2 flex items-center gap-1">
                   ↑ {(event.votes || event.voteCount || 0).toLocaleString()} votes
                 </p>
               </div>
@@ -82,18 +82,18 @@ export default function PublicSquare() {
           ))}
         </div>
 
-        <div className="flex flex-wrap gap-3 mb-6">
-          <select className="glass-card rounded-lg px-3 py-2 text-sm bg-transparent">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 mb-6">
+          <select className="glass-card rounded-lg px-3 py-2.5 text-sm bg-transparent w-full">
             <option>All Events</option>
           </select>
-          <select className="glass-card rounded-lg px-3 py-2 text-sm bg-transparent">
+          <select className="glass-card rounded-lg px-3 py-2.5 text-sm bg-transparent w-full">
             <option>All Categories</option>
           </select>
           <input
             placeholder="Search events..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="glass-card rounded-lg px-4 py-2 text-sm flex-1 min-w-[200px] bg-transparent"
+            className="glass-card rounded-lg px-3 py-2.5 text-sm bg-transparent w-full sm:col-span-2 lg:col-span-2"
           />
         </div>
 
@@ -102,7 +102,7 @@ export default function PublicSquare() {
             <EventCard key={event._id || event.id} event={event} onVote={handleVote} voting={voting === (event._id || event.id)} />
           ))}
         </div>
-      </div>
+      </PageShell>
     </AppLayout>
   );
 }
