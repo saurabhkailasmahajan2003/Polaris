@@ -33,30 +33,31 @@ export default function City() {
   };
 
   return (
-    <AppLayout showWorldState={false} showTicker={false} mobileShell={false}>
-      <div className="relative h-full flex flex-col min-h-[calc(100vh-4rem)]">
-        <div className="absolute top-0 left-0 right-0 z-10 pointer-events-none">
-          <div className="flex items-start justify-between p-4 md:p-5">
-            <div className="pointer-events-auto">
-              <div className="flex items-center gap-2 mb-1">
+    <AppLayout showWorldState={false} showTicker={false} hideBottomNav>
+      <div className="relative h-full min-h-0 flex flex-col overflow-hidden">
+        {/* City sub-header — sits below mobile app header on small screens */}
+        <div className="shrink-0 z-10 pointer-events-none px-3 py-2 md:p-5 md:absolute md:top-0 md:left-0 md:right-0">
+          <div className="flex items-center justify-between gap-2 pointer-events-auto">
+            <div className="min-w-0">
+              <div className="flex items-center gap-2 mb-0.5">
                 <LiveBadge />
-                <span className="text-[10px] font-mono text-text-muted">Night cycle</span>
+                <span className="text-[10px] font-mono text-text-muted hidden sm:inline">Night cycle</span>
               </div>
-              <h1 className="font-heading text-xl md:text-2xl font-bold">The City</h1>
-              <p className="text-xs text-text-secondary mt-0.5 max-w-xs">
-                Click a building in the city to explore
+              <h1 className="font-heading text-base sm:text-xl md:text-2xl font-bold truncate">The City</h1>
+              <p className="text-[11px] sm:text-xs text-text-secondary mt-0.5 max-w-[200px] sm:max-w-xs line-clamp-1 sm:line-clamp-none">
+                Tap a building to explore
               </p>
             </div>
             <Link
               to="/"
-              className="pointer-events-auto text-xs text-text-muted hover:text-primary transition-colors glass-card px-3 py-1.5 rounded-lg"
+              className="shrink-0 text-xs text-text-muted hover:text-primary transition-colors glass-card px-2.5 py-1.5 sm:px-3 rounded-lg touch-manipulation"
             >
               ← Home
             </Link>
           </div>
         </div>
 
-        <div className="flex-1 min-h-0 relative">
+        <div className="flex-1 min-h-0 relative -mt-1 md:mt-0">
           <div
             className="absolute inset-0 pointer-events-none"
             style={{

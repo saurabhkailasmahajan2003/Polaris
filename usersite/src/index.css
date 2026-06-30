@@ -64,6 +64,14 @@ body {
   padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
+.safe-top {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+
+.touch-manipulation {
+  touch-action: manipulation;
+}
+
 .city-skyline-bg {
   background:
     radial-gradient(ellipse 100% 60% at 50% 100%, rgba(26, 58, 110, 0.5) 0%, transparent 60%),

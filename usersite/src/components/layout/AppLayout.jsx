@@ -15,6 +15,7 @@ export default function AppLayout({
   showWorldState = true,
   showTicker = true,
   mobileShell = true,
+  hideBottomNav = false,
 }) {
   const { ticker } = useApp();
   const location = useLocation();
@@ -32,12 +33,26 @@ export default function AppLayout({
     } catch { /* ignore */ }
   }, [sidebarOpen]);
 
+  // Close mobile drawer on route change
+  useEffect(() => {
+    setSidebarOpen(false);
+  }, [location.pathname]);
+
   const showMobileChrome = mobileShell;
+  const showBottomBar = showMobileChrome && !hideBottomNav;
+  const mobilePadTop = showMobileChrome ? 'pt-14' : '';
+  const mobilePadBottom = showBottomBar ? 'pb-[calc(49px+env(safe-area-inset-bottom,0px))]' : '';
 
   return (
-    <div className="h-screen flex flex-col bg-night overflow-hidden">
-      {showMobileChrome && <MobileHeader />}
-      {!sidebarOpen && !showMobileChrome && <SidebarToggle onOpen={() => setSidebarOpen(true)} />}
+    <div className="h-[100dvh] flex flex-col bg-night overflow-hidden">
+      {showMobileChrome && (
+        <MobileHeader onOpenMenu={() => setSidebarOpen(true)} />
+      )}
+
+      {/* Desktop-only floating toggle when sidebar collapsed */}
+      {!sidebarOpen && !showMobileChrome && (
+        <SidebarToggle onOpen={() => setSidebarOpen(true)} />
+      )}
       {!sidebarOpen && showMobileChrome && (
         <div className="hidden md:block">
           <SidebarToggle onOpen={() => setSidebarOpen(true)} />
@@ -45,13 +60,11 @@ export default function AppLayout({
       )}
 
       <div className="flex flex-1 min-h-0">
-        <div className="hidden md:block">
-          <Sidebar
-            open={sidebarOpen}
-            onClose={() => setSidebarOpen(false)}
-            activePath={location.pathname}
-          />
-        </div>
+        <Sidebar
+          open={sidebarOpen}
+          onClose={() => setSidebarOpen(false)}
+          activePath={location.pathname}
+        />
         <div className="flex-1 flex flex-col min-w-0 min-h-0 w-full">
           {showWorldState && <WorldStateBar />}
           <motion.main
@@ -59,9 +72,7 @@ export default function AppLayout({
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.2 }}
-            className={`flex-1 overflow-y-auto min-h-0 ${
-              showMobileChrome ? 'pt-14 pb-[49px] md:pt-0 md:pb-0' : ''
-            }`}
+            className={`flex-1 overflow-y-auto min-h-0 md:pt-0 md:pb-0 ${mobilePadTop} ${mobilePadBottom}`}
           >
             {children}
           </motion.main>
@@ -73,7 +84,7 @@ export default function AppLayout({
         </div>
       </div>
 
-      {showMobileChrome && <BottomNav />}
+      {showBottomBar && <BottomNav />}
     </div>
   );
 }

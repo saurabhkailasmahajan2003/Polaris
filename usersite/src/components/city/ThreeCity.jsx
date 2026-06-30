@@ -258,7 +258,7 @@ export default function ThreeCity({ selectedBuilding, onBuildingSelect, activeCa
 
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
     renderer.setSize(width, height);
-    renderer.setPixelRatio(window.devicePixelRatio);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure = 1.2;
@@ -424,25 +424,28 @@ export default function ThreeCity({ selectedBuilding, onBuildingSelect, activeCa
       labelRenderer.setSize(w, h);
     };
 
-    const onMouseMove = (e) => {
-      if (isDragging) {
-        const delta = (e.clientX - dragStartX) * 0.004;
-        if (Math.abs(e.clientX - dragStartX) > 4) hasDragged = true;
-        scene.rotation.y = dragRotation + delta;
-        return;
-      }
-
+    const getPointer = (clientX, clientY) => {
       const rect = container.getBoundingClientRect();
-      mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
-      mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+      mouse.x = ((clientX - rect.left) / rect.width) * 2 - 1;
+      mouse.y = -((clientY - rect.top) / rect.height) * 2 + 1;
       raycaster.setFromCamera(mouse, camera);
-
       const meshes = buildings.flatMap((g) => g.children.filter((c) => c.userData?.isBuilding));
       hoveredRef.current = null;
       const hits = raycaster.intersectObjects(meshes);
       if (hits.length) hoveredRef.current = hits[0].object.parent;
       container.style.cursor = hoveredRef.current ? 'pointer' : 'default';
     };
+
+    const onPointerMove = (clientX, clientY) => {
+      if (isDragging) {
+        if (Math.abs(clientX - dragStartX) > 4) hasDragged = true;
+        scene.rotation.y = dragRotation + (clientX - dragStartX) * 0.004;
+        return;
+      }
+      getPointer(clientX, clientY);
+    };
+
+    const onMouseMove = (e) => onPointerMove(e.clientX, e.clientY);
 
     const onMouseDown = (e) => {
       isDragging = true;
@@ -451,7 +454,21 @@ export default function ThreeCity({ selectedBuilding, onBuildingSelect, activeCa
       dragRotation = scene.rotation.y;
     };
 
-    const onMouseUp = () => {
+    const onTouchStart = (e) => {
+      if (e.touches.length !== 1) return;
+      isDragging = true;
+      hasDragged = false;
+      dragStartX = e.touches[0].clientX;
+      dragRotation = scene.rotation.y;
+    };
+
+    const onTouchMove = (e) => {
+      if (e.touches.length !== 1) return;
+      e.preventDefault();
+      onPointerMove(e.touches[0].clientX, e.touches[0].clientY);
+    };
+
+    const onPointerUp = () => {
       isDragging = false;
     };
 
@@ -462,11 +479,23 @@ export default function ThreeCity({ selectedBuilding, onBuildingSelect, activeCa
       }
     };
 
+    const onTouchEnd = () => {
+      if (!hasDragged && hoveredRef.current?.userData?.buildingId) {
+        onSelectRef.current?.(hoveredRef.current.userData.buildingId);
+      }
+      onPointerUp();
+    };
+
+    const resizeObserver = new ResizeObserver(onResize);
+    resizeObserver.observe(container);
     window.addEventListener('resize', onResize);
     container.addEventListener('mousemove', onMouseMove);
     container.addEventListener('mousedown', onMouseDown);
-    window.addEventListener('mouseup', onMouseUp);
+    window.addEventListener('mouseup', onPointerUp);
     container.addEventListener('click', onClick);
+    container.addEventListener('touchstart', onTouchStart, { passive: true });
+    container.addEventListener('touchmove', onTouchMove, { passive: false });
+    container.addEventListener('touchend', onTouchEnd, { passive: true });
 
     let frameId;
     const animate = () => {
@@ -495,11 +524,15 @@ export default function ThreeCity({ selectedBuilding, onBuildingSelect, activeCa
 
     return () => {
       cancelAnimationFrame(frameId);
+      resizeObserver.disconnect();
       window.removeEventListener('resize', onResize);
-      window.removeEventListener('mouseup', onMouseUp);
+      window.removeEventListener('mouseup', onPointerUp);
       container.removeEventListener('mousemove', onMouseMove);
       container.removeEventListener('mousedown', onMouseDown);
       container.removeEventListener('click', onClick);
+      container.removeEventListener('touchstart', onTouchStart);
+      container.removeEventListener('touchmove', onTouchMove);
+      container.removeEventListener('touchend', onTouchEnd);
       renderer.dispose();
       particleGeo.dispose();
       if (container.contains(renderer.domElement)) container.removeChild(renderer.domElement);
@@ -508,10 +541,11 @@ export default function ThreeCity({ selectedBuilding, onBuildingSelect, activeCa
   }, [handleSelect]);
 
   return (
-    <div className="relative w-full h-full">
-      <div ref={containerRef} className="w-full h-full min-h-[420px]" />
-      <p className="absolute bottom-3 left-1/2 -translate-x-1/2 text-[10px] font-mono text-text-muted pointer-events-none">
-        Drag to rotate · Click a building to enter
+    <div className="relative w-full h-full touch-none">
+      <div ref={containerRef} className="absolute inset-0 w-full h-full min-h-[240px]" />
+      <p className="absolute bottom-2 sm:bottom-3 left-1/2 -translate-x-1/2 text-[9px] sm:text-[10px] font-mono text-text-muted pointer-events-none px-2 text-center">
+        <span className="md:hidden">Swipe to rotate · Tap a building</span>
+        <span className="hidden md:inline">Drag to rotate · Click a building to enter</span>
       </p>
     </div>
   );

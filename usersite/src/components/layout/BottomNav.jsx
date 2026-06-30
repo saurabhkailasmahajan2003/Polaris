@@ -68,7 +68,7 @@ const TABS = [
 
 export default function BottomNav() {
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 h-[49px] bg-night/95 backdrop-blur-md border-t border-white/[0.08] flex items-stretch justify-around safe-bottom">
+    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 h-[49px] pb-[env(safe-area-inset-bottom,0px)] bg-night/95 backdrop-blur-md border-t border-white/[0.08] flex items-stretch justify-around">
       {TABS.map((tab) => (
         <NavLink
           key={tab.to}
