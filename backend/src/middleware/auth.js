@@ -1,6 +1,16 @@
 import { clerkMiddleware, getAuth } from '@clerk/express';
 
-const hasClerk = Boolean(process.env.CLERK_SECRET_KEY);
+const secretKey = process.env.CLERK_SECRET_KEY?.trim();
+const publishableKey = process.env.CLERK_PUBLISHABLE_KEY?.trim();
+const placeholder = /your_key|placeholder|changeme/i;
+
+// Clerk needs both real keys; placeholders or a single key → dev mode (no Clerk middleware).
+const hasClerk = Boolean(
+  secretKey
+  && publishableKey
+  && !placeholder.test(secretKey)
+  && !placeholder.test(publishableKey),
+);
 
 export const clerk = hasClerk ? clerkMiddleware() : (req, res, next) => next();
 

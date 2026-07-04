@@ -5,10 +5,10 @@ import os
 from abc import ABC, abstractmethod
 from typing import Any
 
-import anthropic
+import openai
 
-MODEL = os.getenv("MODEL", "claude-sonnet-4-6")
-client = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY", ""))
+MODEL = os.getenv("MODEL", "gpt-4o-mini")
+openai.api_key = os.getenv("OPENAI_API_KEY", "")
 
 BASE_RULES = """
 CRITICAL RULES — YOU MUST FOLLOW:
@@ -68,24 +68,25 @@ OUTPUT FORMAT (JSON only):
 """
 
     async def invoke(self, user_message: str, temperature: float = 0.3) -> dict[str, Any]:
-        if not os.getenv("ANTHROPIC_API_KEY"):
+        if not os.getenv("OPENAI_API_KEY"):
             return self._mock_response(user_message)
 
-        response = client.messages.create(
+        response = openai.ChatCompletion.create(
             model=MODEL,
-            max_tokens=4096,
             temperature=temperature,
-            system=self.build_system_prompt(),
-            messages=[{"role": "user", "content": user_message}],
+            messages=[
+                {"role": "system", "content": self.build_system_prompt()},
+                {"role": "user", "content": user_message},
+            ],
         )
-        text = response.content[0].text
+        text = response["choices"][0]["message"]["content"]
         return parse_json_response(text)
 
     def _mock_response(self, user_message: str) -> dict[str, Any]:
         """Fallback when no API key — enables local dev without Claude."""
         return {
             "position": f"{self.name} analysis pending API key",
-            "reasoning": "Configure ANTHROPIC_API_KEY for live analysis.",
+            "reasoning": "Configure OPENAI_API_KEY for live analysis.",
             "one_line_reasoning": f"{self.name} position on case",
             "risk_level": "medium",
             "confidence": 65,

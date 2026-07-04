@@ -35,11 +35,13 @@ app.post(
 );
 
 app.use(express.json());
-app.use(clerk);
 
+// Health check must run before Clerk — monitoring should work even if auth keys are misconfigured.
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', service: 'polaris-backend', platform: core.platformName });
 });
+
+app.use(clerk);
 
 app.use('/api', apiRouter);
 
