@@ -15,6 +15,11 @@ const app = express();
 const httpServer = createServer(app);
 const PORT = process.env.PORT || 5000;
 
+// First route — no middleware; must work for Render/AWS health checks even if auth/DB fail.
+app.get('/health', (req, res) => {
+  res.json({ status: 'ok', service: 'polaris-backend', platform: core.platformName });
+});
+
 app.use(cors({
   origin: core.corsOrigins,
   credentials: true,
@@ -35,11 +40,6 @@ app.post(
 );
 
 app.use(express.json());
-
-// Health check must run before Clerk — monitoring should work even if auth keys are misconfigured.
-app.get('/health', (req, res) => {
-  res.json({ status: 'ok', service: 'polaris-backend', platform: core.platformName });
-});
 
 app.use(clerk);
 
