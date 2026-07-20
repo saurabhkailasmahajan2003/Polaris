@@ -6,44 +6,49 @@ import PageShell, { ScrollTabs, TabButton } from '../components/layout/PageShell
 import LiveBadge from '../components/ui/LiveBadge';
 import CategoryBadge from '../components/ui/CategoryBadge';
 import VerdictBadge from '../components/ui/VerdictBadge';
-import AgentMessage, { AgentPositionCard } from '../components/ui/AgentMessage';
+import { AgentPositionCard } from '../components/ui/AgentMessage';
 import MiniChart from '../components/ui/MiniChart';
 import AgentAvatar from '../components/ui/AgentAvatar';
+import LiveDeliberationFeed from '../components/city/LiveDeliberationFeed';
 import { casesApi } from '../lib/api';
 import { getSocket } from '../lib/socket';
-import { DEMO_MESSAGES } from '../lib/constants';
 import { useApp } from '../context/AppContext';
 
 const MODES = ['quick', 'summary', 'full'];
 const ROUNDS = ['pre_discussion', 'round1', 'round2', 'round3', 'round4', 'verdict'];
 
-const DEMO_POSITIONS = [
-  { agentId: 'economist', name: 'Economist', stance: 'Supports', reasoning: 'High economic efficiency and financial inclusion potential.', confidence: 85 },
-  { agentId: 'legal_expert', name: 'Legal Expert', stance: 'Conditional', reasoning: 'Strong legal framework and privacy protections required.', confidence: 76 },
-  { agentId: 'ethics_expert', name: 'Ethics Expert', stance: 'Concerns', reasoning: 'Risk of surveillance and power centralization must be mitigated.', confidence: 72 },
-];
-
 function QuickView({ caseDoc, verdict }) {
+  const positions = verdict?.agentPositions?.slice(0, 3) || [];
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
       <div className="lg:col-span-2 space-y-6">
         <div className="glass-card rounded-xl overflow-hidden">
           <div className="bg-gradient-to-r from-warning/30 to-warning/10 px-5 py-3 border-b border-warning/20 flex items-center gap-2">
             <span className="text-xl">⚖️</span>
-            <VerdictBadge verdict={verdict?.decision || 'approved_with_conditions'} />
+            {verdict?.decision ? (
+              <VerdictBadge verdict={verdict.decision} />
+            ) : (
+              <span className="text-sm font-mono text-warning">Awaiting verdict</span>
+            )}
           </div>
           <div className="p-5">
             <p className="text-sm leading-relaxed">
-              {verdict?.statement || 'CBDCs can be implemented with strong privacy protections, decentralized oversight, and clear limits on government control.'}
+              {verdict?.statement || caseDoc?.description || 'No verdict yet. Agents are still deliberating.'}
             </p>
-            <p className="text-xs font-mono text-text-muted mt-3">Confidence: {verdict?.confidence || 87}%</p>
+            {verdict?.confidence != null && (
+              <p className="text-xs font-mono text-text-muted mt-3">Confidence: {verdict.confidence}%</p>
+            )}
           </div>
         </div>
 
         <div>
           <h3 className="text-xs font-mono uppercase tracking-widest text-text-muted mb-3">Key Positions</h3>
           <div className="space-y-3">
-            {(verdict?.agentPositions?.slice(0, 3) || DEMO_POSITIONS).map((a) => (
+            {positions.length === 0 && (
+              <p className="text-sm text-text-muted">Positions will appear after agents deliberate.</p>
+            )}
+            {positions.map((a) => (
               <AgentPositionCard
                 key={a.agentId}
                 agentId={a.agentId}
@@ -54,7 +59,9 @@ function QuickView({ caseDoc, verdict }) {
               />
             ))}
           </div>
-          <button type="button" className="mt-4 text-sm text-primary hover:underline">View All Agent Positions →</button>
+          {positions.length > 0 && (
+            <button type="button" className="mt-4 text-sm text-primary hover:underline">View All Agent Positions →</button>
+          )}
         </div>
       </div>
 
@@ -86,26 +93,31 @@ function QuickView({ caseDoc, verdict }) {
   );
 }
 
-function FullView({ rounds, activeRound, setActiveRound, typingAgent }) {
+function FullView({ rounds, activeRound, setActiveRound, typingAgent, speakingAgent, liveMessages, caseId }) {
   const roundMessages = rounds?.find((r) => r.phase === activeRound)?.messages || [];
-  const messages = roundMessages.length ? roundMessages.map((m) => ({
+  const fromRound = roundMessages.map((m, i) => ({
+    id: `${caseId}-${activeRound}-${m.agentId}-${i}`,
+    caseId,
     agentId: m.agentId,
     agentName: m.agentName,
-    round: parseInt(activeRound.replace('round', ''), 10) || 2,
-    time: '2m ago',
-    content: m.reasoning || m.position,
+    content: m.reasoning || m.position || '',
     confidence: m.confidence,
-    flagged: m.factCheckFlags?.length > 0,
-  })) : DEMO_MESSAGES;
+    round: parseInt(String(activeRound).replace('round', ''), 10) || undefined,
+    buildingId: undefined,
+  })).filter((m) => m.content);
+
+  const feed = liveMessages?.length
+    ? liveMessages.filter((m) => m.caseId === caseId)
+    : fromRound;
 
   const activeAgents = [
-    { id: 'investigator', name: 'Investigator', active: true },
-    { id: 'fact_checker', name: 'Fact Checker', active: true },
-    { id: 'economist', name: 'Economist', active: true },
-    { id: 'legal_expert', name: 'Legal Expert', active: true },
-    { id: 'ethics_expert', name: 'Ethics Expert', active: true, typing: typingAgent === 'Ethics Expert' },
-    { id: 'political_analyst', name: 'Political Analyst', active: true },
-    { id: 'judge', name: 'Judge', active: false },
+    { id: 'investigator', name: 'Investigator' },
+    { id: 'fact_checker', name: 'Fact Checker' },
+    { id: 'economist', name: 'Economist' },
+    { id: 'legal_expert', name: 'Legal Expert' },
+    { id: 'ethics_expert', name: 'Ethics Expert' },
+    { id: 'political_analyst', name: 'Political Analyst' },
+    { id: 'judge', name: 'Judge' },
   ];
 
   return (
@@ -125,29 +137,39 @@ function FullView({ rounds, activeRound, setActiveRound, typingAgent }) {
             </button>
           ))}
         </div>
-        <div className="space-y-4">
-          {messages.map((msg, i) => (
-            <AgentMessage key={i} message={msg} />
-          ))}
-        </div>
+        <LiveDeliberationFeed
+          messages={feed}
+          speakingAgent={speakingAgent?.caseId === caseId ? speakingAgent : null}
+          title="Chamber floor — read each voice slowly"
+          emptyHint="Agents will speak one at a time. Stay with them."
+        />
       </div>
 
       <div className="space-y-4">
         <div className="glass-card rounded-xl p-4">
-          <h3 className="text-xs font-mono uppercase tracking-widest text-text-muted mb-3">Active Agents (7)</h3>
+          <h3 className="text-xs font-mono uppercase tracking-widest text-text-muted mb-3">Active Agents</h3>
           <div className="space-y-2">
-            {activeAgents.map((a) => (
-              <div key={a.id} className="flex items-center gap-2">
-                <AgentAvatar name={a.name} agentId={a.id} size="sm" />
-                <span className="text-sm flex-1">{a.name}</span>
-                <span className={`w-2 h-2 rounded-full ${a.active ? 'bg-success' : 'bg-text-muted'}`} />
-              </div>
-            ))}
+            {activeAgents.map((a) => {
+              const speaking = speakingAgent?.agentId === a.id || typingAgent === a.name;
+              return (
+                <div key={a.id} className="flex items-center gap-2">
+                  <AgentAvatar name={a.name} agentId={a.id} size="sm" glow={speaking} />
+                  <span className="text-sm flex-1">{a.name}</span>
+                  {speaking ? (
+                    <span className="text-[9px] font-mono text-primary animate-pulse">thinking</span>
+                  ) : (
+                    <span className={`w-2 h-2 rounded-full ${speakingAgent ? 'bg-text-muted' : 'bg-success'}`} />
+                  )}
+                </div>
+              );
+            })}
           </div>
         </div>
-        {typingAgent && (
+        {(typingAgent || speakingAgent) && (
           <div className="glass-card rounded-xl p-4">
-            <p className="text-xs text-primary animate-pulse font-mono">● {typingAgent} is typing...</p>
+            <p className="text-xs text-primary animate-pulse font-mono">
+              ● {speakingAgent?.agentName || typingAgent} is carefully forming their view…
+            </p>
           </div>
         )}
       </div>
@@ -161,7 +183,7 @@ export default function CaseView() {
   const mode = searchParams.get('mode') || 'quick';
   const [data, setData] = useState(null);
   const [activeRound, setActiveRound] = useState('round2');
-  const { typingAgent } = useApp();
+  const { typingAgent, speakingAgent, liveMessages } = useApp();
 
   const setMode = (m) => setSearchParams({ mode: m });
 
@@ -179,29 +201,35 @@ export default function CaseView() {
     };
   }, [id]);
 
-  const caseDoc = data?.case || {
-    title: 'Global Central Bank Digital Currencies',
-    category: 'economics',
-    status: 'processing',
-    description: '',
-  };
+  const caseDoc = data?.case;
   const verdict = data?.verdict;
   const rounds = data?.rounds || [];
-  const isLive = caseDoc.status === 'processing';
+  const isLive = caseDoc?.status === 'processing';
+
+  if (!caseDoc) {
+    return (
+      <AppLayout showWorldState={false} showTicker={false}>
+        <PageShell maxWidth="max-w-6xl">
+          <p className="text-sm text-text-muted">Loading case…</p>
+        </PageShell>
+      </AppLayout>
+    );
+  }
 
   return (
     <AppLayout showWorldState={false} showTicker={false}>
       <PageShell maxWidth="max-w-6xl" className="!pt-0 sm:!pt-0">
         <header className="mb-4 md:mb-6 px-0 pt-0">
           <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-2">
-            <span className="text-[10px] sm:text-xs font-mono text-text-muted">CASE #{id?.slice(-2) || '37'}</span>
+            <span className="text-[10px] sm:text-xs font-mono text-text-muted">CASE #{id?.slice(-4)}</span>
             {isLive && <LiveBadge />}
           </div>
           <h1 className="font-heading text-lg sm:text-2xl md:text-3xl font-bold leading-tight">{caseDoc.title}</h1>
           <div className="flex flex-wrap gap-1.5 sm:gap-2 mt-2 sm:mt-3">
-            <CategoryBadge category={caseDoc.category || 'economy'} />
-            <span className="text-[10px] sm:text-xs font-mono text-text-muted px-2 py-1 rounded bg-white/5">12,842 citizens</span>
-            <span className="text-[10px] sm:text-xs font-mono text-text-muted px-2 py-1 rounded bg-white/5 hidden sm:inline">May 12, 2024</span>
+            <CategoryBadge category={caseDoc.category || 'general'} />
+            {caseDoc.status && (
+              <span className="text-[10px] sm:text-xs font-mono text-text-muted px-2 py-1 rounded bg-white/5">{caseDoc.status}</span>
+            )}
           </div>
         </header>
 
@@ -218,7 +246,17 @@ export default function CaseView() {
           <motion.div key={mode} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
             {mode === 'quick' && <QuickView caseDoc={caseDoc} verdict={verdict} />}
             {mode === 'summary' && <QuickView caseDoc={caseDoc} verdict={verdict} />}
-            {mode === 'full' && <FullView rounds={rounds} activeRound={activeRound} setActiveRound={setActiveRound} typingAgent={typingAgent} />}
+            {mode === 'full' && (
+              <FullView
+                rounds={rounds}
+                activeRound={activeRound}
+                setActiveRound={setActiveRound}
+                typingAgent={typingAgent}
+                speakingAgent={speakingAgent}
+                liveMessages={liveMessages}
+                caseId={id}
+              />
+            )}
           </motion.div>
         </AnimatePresence>
       </PageShell>

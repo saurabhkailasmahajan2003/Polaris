@@ -4,19 +4,20 @@ import AppLayout from '../components/layout/AppLayout';
 import PageShell from '../components/layout/PageShell';
 import CaseCard from '../components/ui/CaseCard';
 import { archiveApi } from '../lib/api';
-import { DEMO_ARCHIVE } from '../lib/constants';
 
 export default function Archive() {
-  const [archives, setArchives] = useState(DEMO_ARCHIVE);
+  const [archives, setArchives] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [view, setView] = useState('grid');
   const [search, setSearch] = useState('');
   const navigate = useNavigate();
 
   useEffect(() => {
+    setLoading(true);
     archiveApi.list({ search }).then((data) => {
       if (data.archives?.length) {
-        setArchives(data.archives.map((a, i) => ({
-          id: a.caseId?.slice(-2) || DEMO_ARCHIVE[i]?.id,
+        setArchives(data.archives.map((a) => ({
+          id: a.caseId?.slice(-2) || a._id,
           title: a.title,
           verdict: a.verdict,
           date: new Date(a.completedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
@@ -24,8 +25,12 @@ export default function Archive() {
           agents: a.participatingAgents?.length || 7,
           caseId: a.caseId,
         })));
+      } else {
+        setArchives([]);
       }
-    }).catch(() => {});
+    }).catch(() => {
+      setArchives([]);
+    }).finally(() => setLoading(false));
   }, [search]);
 
   return (
@@ -50,6 +55,11 @@ export default function Archive() {
           </div>
         </div>
 
+        {loading && <p className="text-sm text-text-muted text-center py-8">Loading archive…</p>}
+        {!loading && archives.length === 0 && (
+          <p className="text-sm text-text-muted text-center py-8">No completed cases yet.</p>
+        )}
+
         <div className={view === 'grid' ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4' : 'space-y-3'}>
           {archives.map((item) => (
             <CaseCard
@@ -66,9 +76,11 @@ export default function Archive() {
           ))}
         </div>
 
-        <button type="button" className="w-full mt-6 sm:mt-8 py-3 border border-white/20 rounded-xl text-sm font-medium hover:border-primary/50 hover:text-primary transition-all touch-manipulation">
-          Load More Cases
-        </button>
+        {archives.length > 0 && (
+          <button type="button" className="w-full mt-6 sm:mt-8 py-3 border border-white/20 rounded-xl text-sm font-medium hover:border-primary/50 hover:text-primary transition-all touch-manipulation">
+            Load More Cases
+          </button>
+        )}
       </PageShell>
     </AppLayout>
   );

@@ -5,7 +5,7 @@ import Verdict from '../models/Verdict.js';
 
 const router = Router();
 
-router.get('/stats', async (req, res) => {
+router.get('/', async (req, res) => {
   try {
     const [totalEvents, activeCases, completedVerdicts] = await Promise.all([
       Event.countDocuments(),

@@ -1,13 +1,27 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { casesApi } from '../../lib/api';
 import { VERDICT_BORDERS, VERDICT_LABELS, TIMEFRAME_LABELS } from '../../lib/constants';
+import { useApp } from '../../context/AppContext';
+import LiveDeliberationFeed from './LiveDeliberationFeed';
 
 export default function CasePanelContent({ caseId, onBack }) {
   const [data, setData] = useState(null);
+  const { speakingAgent, liveMessages } = useApp();
 
   useEffect(() => {
     casesApi.get(caseId).then(setData).catch(console.error);
+    const t = setInterval(() => {
+      casesApi.get(caseId).then(setData).catch(() => {});
+    }, 12000);
+    return () => clearInterval(t);
   }, [caseId]);
+
+  const caseFeed = useMemo(
+    () => liveMessages.filter((m) => m.caseId === caseId),
+    [liveMessages, caseId],
+  );
+
+  const caseSpeaking = speakingAgent?.caseId === caseId ? speakingAgent : null;
 
   if (!data) {
     return <p className="text-text-secondary text-sm p-6">Loading case...</p>;
@@ -19,7 +33,7 @@ export default function CasePanelContent({ caseId, onBack }) {
 
   return (
     <div className="h-full overflow-y-auto p-4 sm:p-6">
-      <button onClick={onBack} className="text-primary text-sm hover:underline mb-4">← Back</button>
+      <button type="button" onClick={onBack} className="text-primary text-sm hover:underline mb-4">← Back</button>
       <h2 className="font-heading text-xl font-bold mb-2">{caseDoc.title}</h2>
       <p className="text-text-secondary text-sm mb-6 line-clamp-3">{caseDoc.description}</p>
 
@@ -42,10 +56,23 @@ export default function CasePanelContent({ caseId, onBack }) {
           )}
         </>
       ) : (
-        <div className="bg-primary/10 border border-primary/30 rounded-xl p-4 mb-6">
-          <p className="text-primary text-sm animate-pulse capitalize">
-            {caseDoc.currentPhase?.replace(/_/g, ' ')} — {caseDoc.currentAgent || 'processing'}
+        <div className="bg-primary/10 border border-primary/30 rounded-xl p-4 mb-4">
+          <p className="text-primary text-sm capitalize">
+            {caseDoc.currentPhase?.replace(/_/g, ' ') || 'deliberation'}
+            {caseDoc.currentAgent ? ` — ${caseDoc.currentAgent}` : ''}
           </p>
+          <p className="text-xs text-text-muted mt-1">Agents are thinking carefully. Read each voice as it appears.</p>
+        </div>
+      )}
+
+      {!verdict && (
+        <div className="mb-6">
+          <LiveDeliberationFeed
+            messages={caseFeed}
+            speakingAgent={caseSpeaking}
+            title="Live chamber discussion"
+            emptyHint="Discussion will appear here slowly as each expert speaks."
+          />
         </div>
       )}
 

@@ -51,25 +51,16 @@ export const AGENT_COLORS = {
   judge: '#4f6ef7',
 };
 
-export const DEMO_EVENTS = [
-  { id: '1', category: 'economy', title: 'Global Central Bank Digital Currencies', description: 'Should nations adopt centralized digital currencies with cross-border interoperability and privacy safeguards?', votes: 24810, rank: 1, image: 'https://images.unsplash.com/photo-1621761191319-c6fb62004040?w=400&h=240&fit=crop' },
-  { id: '2', category: 'technology', title: 'AI Regulation Frameworks', description: 'Establishing global standards for artificial intelligence development, deployment, and accountability.', votes: 18392, rank: 2, image: 'https://images.unsplash.com/photo-1677442136019-21780ecad995?w=400&h=240&fit=crop' },
-  { id: '3', category: 'politics', title: 'Election Transparency Reform', description: 'Mandating verifiable voting systems and real-time audit trails for democratic elections worldwide.', votes: 15276, rank: 3, image: 'https://images.unsplash.com/photo-1540910051071-896cd6dceb6d?w=400&h=240&fit=crop' },
-  { id: '4', category: 'environment', title: 'Global Climate Emergency Declaration', description: 'Binding international commitments to accelerate carbon reduction and climate adaptation funding.', votes: 12451, image: 'https://images.unsplash.com/photo-1611273426858-450d8e3c9fac?w=400&h=240&fit=crop' },
-  { id: '5', category: 'society', title: 'Universal Basic Income Implementation', description: 'Pilot programs and frameworks for guaranteed minimum income across developed economies.', votes: 9842, image: 'https://images.unsplash.com/photo-1579621970563-ebec7560ff3e?w=400&h=240&fit=crop' },
-  { id: '6', category: 'technology', title: 'Facial Recognition in Public Spaces', description: 'Regulating biometric surveillance in cities, airports, and public institutions.', votes: 7231, image: 'https://images.unsplash.com/photo-1555949963-aa79dcee981c?w=400&h=240&fit=crop' },
-];
-
-export const DEMO_ARCHIVE = [
-  { id: '36', title: 'AI Regulation Frameworks', verdict: 'approved', date: 'May 10, 2024', confidence: 91, agents: 9 },
-  { id: '35', title: 'Election Transparency Reform', verdict: 'rejected', date: 'May 8, 2024', confidence: 84, agents: 8 },
-  { id: '34', title: 'Universal Basic Income', verdict: 'approved_with_conditions', date: 'May 5, 2024', confidence: 78, agents: 7 },
-  { id: '33', title: 'Facial Recognition in Public Spaces', verdict: 'delayed', date: 'May 3, 2024', confidence: 65, agents: 8 },
-];
-
-export const DEMO_MESSAGES = [
-  { agentId: 'economist', agentName: 'Economist', round: 2, time: '2m ago', content: '@Legal Expert I agree on the need for safeguards, but overly strict regulation could limit financial innovation and global competitiveness.', confidence: 82, mention: 'Legal Expert' },
-  { agentId: 'legal_expert', agentName: 'Legal Expert', round: 2, time: '3m ago', content: '@Economist: Innovation is important, but without strong legal boundaries, we risk enabling mass surveillance and abuse of power.', confidence: 79, mention: 'Economist', flagged: true },
-  { agentId: 'fact_checker', agentName: 'Fact Checker', round: 2, time: '3m ago', content: "The claim about 'zero risk of surveillance' made earlier by Political Analyst is NOT supported by evidence.", tags: ['Supported', 'Evidence'] },
-  { agentId: 'ethics_expert', agentName: 'Ethics Expert', round: 2, time: '4m ago', content: 'We must prioritize human dignity and autonomy over efficiency and convenience.', confidence: 74 },
-];
+/** Optional cover images by category when an event has no image */
+export const CATEGORY_IMAGES = {
+  economy: 'https://images.unsplash.com/photo-1621761191319-c6fb62004040?w=400&h=240&fit=crop',
+  economics: 'https://images.unsplash.com/photo-1621761191319-c6fb62004040?w=400&h=240&fit=crop',
+  technology: 'https://images.unsplash.com/photo-1677442136019-21780ecad995?w=400&h=240&fit=crop',
+  politics: 'https://images.unsplash.com/photo-1540910051071-896cd6dceb6d?w=400&h=240&fit=crop',
+  environment: 'https://images.unsplash.com/photo-1611273426858-450d8e3c9fac?w=400&h=240&fit=crop',
+  society: 'https://images.unsplash.com/photo-1579621970563-ebec7560ff3e?w=400&h=240&fit=crop',
+  social: 'https://images.unsplash.com/photo-1579621970563-ebec7560ff3e?w=400&h=240&fit=crop',
+  legal: 'https://images.unsplash.com/photo-1589829545856-d10d557cf95f?w=400&h=240&fit=crop',
+  ethics: 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=400&h=240&fit=crop',
+  general: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=400&h=240&fit=crop',
+};

@@ -2,23 +2,17 @@ import { useEffect, useState, useCallback } from 'react';
 import AppLayout from '../components/layout/AppLayout';
 import FeedPost from '../components/feed/FeedPost';
 import { eventsApi, votesApi } from '../lib/api';
-import { DEMO_EVENTS } from '../lib/constants';
-
-const DEMO_COMMENTS = [
-  { id: '1', user: 'citizen_42', text: 'This needs to go to the Supreme Court ASAP' },
-  { id: '2', user: 'policy_watcher', text: 'The evidence on this is really strong' },
-];
+import { CATEGORY_IMAGES } from '../lib/constants';
 
 function toFeedPost(event, index) {
-  const demo = DEMO_EVENTS[index % DEMO_EVENTS.length];
   return {
-    id: event._id || event.id || demo.id,
-    title: event.title || demo.title,
-    description: event.description || demo.description,
-    category: event.category || demo.category,
-    image: event.image || demo.image,
-    votes: event.voteCount ?? event.votes ?? demo.votes,
-    username: `polaris_${(event.category || demo.category || 'news').replace(/\s/g, '_')}`,
+    id: event._id || event.id,
+    title: event.title,
+    description: event.description,
+    category: event.category,
+    image: event.image || CATEGORY_IMAGES[event.category] || CATEGORY_IMAGES.general,
+    votes: event.voteCount ?? event.votes ?? 0,
+    username: `polaris_${(event.category || 'news').replace(/\s/g, '_')}`,
     location: 'Public Square · Polaris',
     time: `${1 + (index % 12)}h ago`,
     live: index < 2,
@@ -26,31 +20,26 @@ function toFeedPost(event, index) {
 }
 
 export default function Feed() {
-  const [posts, setPosts] = useState(() => DEMO_EVENTS.map((e, i) => toFeedPost(e, i)));
+  const [posts, setPosts] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [liked, setLiked] = useState({});
   const [saved, setSaved] = useState({});
-  const [likeCounts, setLikeCounts] = useState(() =>
-    Object.fromEntries(DEMO_EVENTS.map((e) => [e.id, e.votes])),
-  );
-  const [comments, setComments] = useState(() =>
-    Object.fromEntries(DEMO_EVENTS.map((e) => [e.id, [...DEMO_COMMENTS]])),
-  );
+  const [likeCounts, setLikeCounts] = useState({});
+  const [comments, setComments] = useState({});
 
   useEffect(() => {
     eventsApi.list().then((data) => {
-      if (data?.length) {
+      if (Array.isArray(data) && data.length) {
         const mapped = data.map((e, i) => toFeedPost(e, i));
         setPosts(mapped);
         setLikeCounts(Object.fromEntries(mapped.map((p) => [p.id, p.votes || 0])));
-        setComments((prev) => {
-          const next = { ...prev };
-          mapped.forEach((p) => {
-            if (!next[p.id]) next[p.id] = [...DEMO_COMMENTS];
-          });
-          return next;
-        });
+        setComments(Object.fromEntries(mapped.map((p) => [p.id, []])));
+      } else {
+        setPosts([]);
       }
-    });
+    }).catch(() => {
+      setPosts([]);
+    }).finally(() => setLoading(false));
   }, []);
 
   const toggleLike = useCallback(async (postId) => {
@@ -63,7 +52,7 @@ export default function Feed() {
     if (!wasLiked) {
       try {
         await votesApi.vote(postId);
-      } catch { /* offline / demo */ }
+      } catch { /* offline */ }
     }
   }, [liked]);
 
@@ -87,6 +76,14 @@ export default function Feed() {
         </div>
 
         <div className="md:py-4 md:space-y-4">
+          {loading && (
+            <p className="px-4 py-8 text-sm text-text-muted text-center">Loading feed…</p>
+          )}
+          {!loading && posts.length === 0 && (
+            <p className="px-4 py-8 text-sm text-text-muted text-center">
+              No events yet. Create events in the admin panel.
+            </p>
+          )}
           {posts.map((post) => (
             <div key={post.id} className="md:rounded-xl md:border md:border-white/[0.08] md:overflow-hidden">
               <FeedPost

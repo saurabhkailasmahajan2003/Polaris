@@ -217,17 +217,19 @@ function addPath(scene, points, y = 0.12) {
   scene.add(new THREE.Line(geo, mat));
 }
 
-export default function ThreeCity({ selectedBuilding, onBuildingSelect, activeCaseIds = [] }) {
+export default function ThreeCity({ selectedBuilding, onBuildingSelect, activeCaseIds = [], speakingBuildingId = null }) {
   const containerRef = useRef(null);
   const onSelectRef = useRef(onBuildingSelect);
   const selectedRef = useRef(selectedBuilding);
   const hoveredRef = useRef(null);
   const activeIdsRef = useRef(activeCaseIds);
+  const speakingBuildingRef = useRef(speakingBuildingId);
   const labelObjectsRef = useRef([]);
 
   onSelectRef.current = onBuildingSelect;
   selectedRef.current = selectedBuilding;
   activeIdsRef.current = activeCaseIds;
+  speakingBuildingRef.current = speakingBuildingId;
 
   const handleSelect = useCallback((id) => {
     onSelectRef.current?.(id);
@@ -373,10 +375,15 @@ export default function ThreeCity({ selectedBuilding, onBuildingSelect, activeCa
     const updateLabelsLive = () => {
       labelObjects.forEach(({ label, cfg, div }) => {
         const meta = CITY_BUILDINGS.find((b) => b.id === cfg.id);
-        const showLive = cfg.isActiveWhenCases && activeIdsRef.current.length > 0;
-        const liveLine = showLive
-          ? '<div style="color:#10b981;font-size:10px;font-weight:500;margin-top:4px">● LIVE</div>'
-          : '';
+        const hqLive = cfg.isActiveWhenCases && activeIdsRef.current.length > 0;
+        const speakingHere = speakingBuildingRef.current === cfg.id;
+        const showLive = hqLive || speakingHere;
+        let liveLine = '';
+        if (speakingHere) {
+          liveLine = '<div style="color:#22d3ee;font-size:10px;font-weight:600;margin-top:4px">● AGENT SPEAKING</div>';
+        } else if (showLive) {
+          liveLine = '<div style="color:#10b981;font-size:10px;font-weight:500;margin-top:4px">● LIVE</div>';
+        }
         div.innerHTML = `
           <div style="font-size:13px;font-weight:600;color:white">${meta?.label || cfg.id}</div>
           <div style="color:#94a3b8;font-size:10px;font-weight:400;margin-top:2px">${meta?.tagline || ''}</div>
@@ -391,11 +398,15 @@ export default function ThreeCity({ selectedBuilding, onBuildingSelect, activeCa
         if (!mat) return;
         const selected = b.userData.buildingId === selectedRef.current;
         const hovered = b === hoveredRef.current;
+        const speaking = b.userData.buildingId === speakingBuildingRef.current;
         const active = b.userData.buildingId === 'investigation_hq' && activeIdsRef.current.length > 0;
 
         if (selected) {
           mat.emissiveIntensity = 0.75;
           b.scale.setScalar(1.04);
+        } else if (speaking) {
+          mat.emissiveIntensity = pulse + 0.45;
+          b.scale.setScalar(1.06);
         } else if (hovered) {
           mat.emissiveIntensity = 0.6;
           b.scale.setScalar(1.02);
