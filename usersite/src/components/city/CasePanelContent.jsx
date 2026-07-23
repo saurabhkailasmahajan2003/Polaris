@@ -1,8 +1,8 @@
 import { useEffect, useState, useMemo } from 'react';
 import { casesApi } from '../../lib/api';
-import { VERDICT_BORDERS, VERDICT_LABELS, TIMEFRAME_LABELS } from '../../lib/constants';
 import { useApp } from '../../context/AppContext';
 import LiveDeliberationFeed from './LiveDeliberationFeed';
+import RealVsAiTable from '../results/RealVsAiTable';
 
 export default function CasePanelContent({ caseId, onBack }) {
   const [data, setData] = useState(null);
@@ -38,23 +38,9 @@ export default function CasePanelContent({ caseId, onBack }) {
       <p className="text-text-secondary text-sm mb-6 line-clamp-3">{caseDoc.description}</p>
 
       {verdict ? (
-        <>
-          <div className={`bg-city border border-white/5 border-l-4 ${VERDICT_BORDERS[verdict.decision]} rounded-xl p-5 mb-6`}>
-            <p className="text-xs text-text-secondary uppercase tracking-wider mb-1">Verdict</p>
-            <p className="font-medium">{verdict.statement}</p>
-            <p className="text-xs text-text-secondary mt-2">{VERDICT_LABELS[verdict.decision]}</p>
-          </div>
-          {verdict.consequences?.length > 0 && (
-            <div className="grid gap-3 mb-6">
-              {verdict.consequences.map((c) => (
-                <div key={c.timeframe} className="bg-city border border-white/5 rounded-lg p-3">
-                  <p className="text-xs text-primary font-mono mb-1">{TIMEFRAME_LABELS[c.timeframe]}</p>
-                  <p className="text-xs text-text-secondary">{c.socialImpact}</p>
-                </div>
-              ))}
-            </div>
-          )}
-        </>
+        <div className="mb-6">
+          <RealVsAiTable caseDoc={caseDoc} verdict={verdict} />
+        </div>
       ) : (
         <div className="bg-primary/10 border border-primary/30 rounded-xl p-4 mb-4">
           <p className="text-primary text-sm capitalize">

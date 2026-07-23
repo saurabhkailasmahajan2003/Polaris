@@ -4,6 +4,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { ClerkProvider } from '@clerk/clerk-react';
 import { ConfigProvider, useConfig } from './context/ConfigContext';
 import { AppProvider } from './context/AppContext';
+import { LanguageProvider } from './context/LanguageContext';
 import Feed from './pages/Feed';
 import Landing from './pages/Landing';
 import City from './pages/City';
@@ -19,22 +20,24 @@ import './index.css';
 
 function AppRoutes() {
   return (
-    <AppProvider>
-      <Routes>
-        <Route path="/" element={<Feed />} />
-        <Route path="/welcome" element={<Landing />} />
-        <Route path="/city" element={<City />} />
-        <Route path="/square" element={<PublicSquare />} />
-        <Route path="/cases" element={<LiveCases />} />
-        <Route path="/cases/:id" element={<CaseView />} />
-        <Route path="/agents" element={<AgentsList />} />
-        <Route path="/agents/:id" element={<AgentProfile />} />
-        <Route path="/archive" element={<Archive />} />
-        <Route path="/how-it-works" element={<HowItWorks />} />
-        <Route path="/about" element={<About />} />
-        <Route path="/case/:id" element={<CaseView />} />
-      </Routes>
-    </AppProvider>
+    <LanguageProvider>
+      <AppProvider>
+        <Routes>
+          <Route path="/" element={<Feed />} />
+          <Route path="/welcome" element={<Landing />} />
+          <Route path="/city" element={<City />} />
+          <Route path="/square" element={<PublicSquare />} />
+          <Route path="/cases" element={<LiveCases />} />
+          <Route path="/cases/:id" element={<CaseView />} />
+          <Route path="/agents" element={<AgentsList />} />
+          <Route path="/agents/:id" element={<AgentProfile />} />
+          <Route path="/archive" element={<Archive />} />
+          <Route path="/how-it-works" element={<HowItWorks />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/case/:id" element={<CaseView />} />
+        </Routes>
+      </AppProvider>
+    </LanguageProvider>
   );
 }
 

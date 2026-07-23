@@ -111,6 +111,11 @@ export function AppProvider({ children }) {
       refreshActiveCases();
     });
 
+    socket.on('cases:deployed', (data) => {
+      addTicker(data.message || 'Top posts moved to the AI world — go to the City');
+      refreshActiveCases();
+    });
+
     socket.on('city:activity', (data) => addTicker(data.message));
 
     return () => {
@@ -119,6 +124,7 @@ export function AppProvider({ children }) {
       socket.off('case:round_complete');
       socket.off('case:agent_speaking');
       socket.off('case:verdict_ready');
+      socket.off('cases:deployed');
       socket.off('city:activity');
     };
   }, [addTicker, enqueueRoundMessages, refreshActiveCases]);

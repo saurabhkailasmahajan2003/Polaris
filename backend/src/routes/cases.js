@@ -7,6 +7,7 @@ import Agent from '../models/Agent.js';
 import { requireAuth } from '../middleware/auth.js';
 import { runPipeline } from '../services/aiEngine.js';
 import { setCaseState } from '../config/redis.js';
+import { emitCasesDeployed, emitCityActivity } from '../socket/events.js';
 
 const router = Router();
 
@@ -99,6 +100,16 @@ router.post('/deploy', requireAuth, async (req, res) => {
         Case.findByIdAndUpdate(caseDoc._id, { status: 'failed' });
       });
     }
+
+    const caseIds = deployedCases.map((c) => c._id.toString());
+    emitCasesDeployed({
+      count: deployedCases.length,
+      caseIds,
+      message: 'Top liked posts moved to the AI world. Go to the City to see live action.',
+    });
+    emitCityActivity(
+      `${deployedCases.length} case(s) entered the City — watch live deliberation`
+    );
 
     res.status(201).json({ message: `Deployed ${deployedCases.length} cases`, cases: deployedCases });
   } catch (err) {

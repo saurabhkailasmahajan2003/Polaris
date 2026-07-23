@@ -59,6 +59,33 @@ def format_message(agent_id: str, output: dict, phase: str) -> dict:
     }
 
 
+def _map_comparison_block(block: dict) -> dict:
+    if not isinstance(block, dict):
+        return {"bottomLine": "", "rows": []}
+    rows = []
+    for row in block.get("rows") or []:
+        if not isinstance(row, dict):
+            continue
+        rows.append({
+            "topic": row.get("topic", ""),
+            "realWorld": row.get("real_world", row.get("realWorld", "")),
+            "aiWorld": row.get("ai_world", row.get("aiWorld", "")),
+        })
+    return {
+        "bottomLine": block.get("bottom_line", block.get("bottomLine", "")),
+        "rows": rows,
+    }
+
+
+def _map_plain_comparison(raw: dict) -> dict:
+    mapped = _map_comparison_block(raw)
+    translations = {}
+    for lang, block in (raw.get("translations") or {}).items():
+        translations[lang] = _map_comparison_block(block if isinstance(block, dict) else {})
+    mapped["translations"] = translations
+    return mapped
+
+
 async def pre_discussion(state: PipelineState) -> PipelineState:
     case_id = state["case_id"]
     await notify_case_started(case_id, state["participating_agents"])
@@ -207,6 +234,7 @@ async def verdict(state: PipelineState) -> PipelineState:
             for p in verdict_output.get("agent_positions", [])
         ],
         "keyDebateMoments": verdict_output.get("key_debate_moments", []),
+        "plainComparison": _map_plain_comparison(verdict_output.get("plain_comparison") or {}),
     }
 
     # Build agent updates from round 4

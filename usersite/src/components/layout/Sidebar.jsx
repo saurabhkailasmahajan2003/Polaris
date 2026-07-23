@@ -1,6 +1,7 @@
 import { NavLink } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useConfig } from '../../context/ConfigContext';
+import LanguageSwitcher from '../ui/LanguageSwitcher';
 
 const NAV = [
   { to: '/', icon: '🏠', label: 'Feed' },
@@ -83,6 +84,10 @@ export default function Sidebar({ open, onClose, activePath }) {
               );
             })}
           </nav>
+
+          <div className="p-3 border-t border-white/[0.06] shrink-0">
+            <LanguageSwitcher className="w-full justify-between" />
+          </div>
         </div>
       </motion.aside>
     </>

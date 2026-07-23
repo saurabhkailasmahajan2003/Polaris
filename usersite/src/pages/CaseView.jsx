@@ -1,53 +1,50 @@
 import { useEffect, useState } from 'react';
-import { useParams, useSearchParams, Link } from 'react-router-dom';
+import { useParams, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import AppLayout from '../components/layout/AppLayout';
 import PageShell, { ScrollTabs, TabButton } from '../components/layout/PageShell';
 import LiveBadge from '../components/ui/LiveBadge';
 import CategoryBadge from '../components/ui/CategoryBadge';
 import VerdictBadge from '../components/ui/VerdictBadge';
+import LanguageSwitcher from '../components/ui/LanguageSwitcher';
+import RealVsAiTable from '../components/results/RealVsAiTable';
 import { AgentPositionCard } from '../components/ui/AgentMessage';
-import MiniChart from '../components/ui/MiniChart';
 import AgentAvatar from '../components/ui/AgentAvatar';
 import LiveDeliberationFeed from '../components/city/LiveDeliberationFeed';
 import { casesApi } from '../lib/api';
 import { getSocket } from '../lib/socket';
 import { useApp } from '../context/AppContext';
+import { useLanguage } from '../context/LanguageContext';
 
 const MODES = ['quick', 'summary', 'full'];
 const ROUNDS = ['pre_discussion', 'round1', 'round2', 'round3', 'round4', 'verdict'];
 
 function QuickView({ caseDoc, verdict }) {
+  const { t } = useLanguage();
   const positions = verdict?.agentPositions?.slice(0, 3) || [];
+  const hasResult = Boolean(verdict?.decision);
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
-      <div className="lg:col-span-2 space-y-6">
+    <div className="space-y-6">
+      {hasResult ? (
+        <RealVsAiTable caseDoc={caseDoc} verdict={verdict} />
+      ) : (
         <div className="glass-card rounded-xl overflow-hidden">
           <div className="bg-gradient-to-r from-warning/30 to-warning/10 px-5 py-3 border-b border-warning/20 flex items-center gap-2">
-            <span className="text-xl">⚖️</span>
-            {verdict?.decision ? (
-              <VerdictBadge verdict={verdict.decision} />
-            ) : (
-              <span className="text-sm font-mono text-warning">Awaiting verdict</span>
-            )}
+            <span className="text-sm font-mono text-warning">{t.awaitingVerdict}</span>
           </div>
           <div className="p-5">
-            <p className="text-sm leading-relaxed">
-              {verdict?.statement || caseDoc?.description || 'No verdict yet. Agents are still deliberating.'}
+            <p className="text-sm leading-relaxed text-text-secondary">
+              {caseDoc?.description || t.noVerdictYet}
             </p>
-            {verdict?.confidence != null && (
-              <p className="text-xs font-mono text-text-muted mt-3">Confidence: {verdict.confidence}%</p>
-            )}
           </div>
         </div>
+      )}
 
+      {positions.length > 0 && (
         <div>
-          <h3 className="text-xs font-mono uppercase tracking-widest text-text-muted mb-3">Key Positions</h3>
+          <h3 className="text-xs font-mono uppercase tracking-widest text-text-muted mb-3">{t.keyPoints}</h3>
           <div className="space-y-3">
-            {positions.length === 0 && (
-              <p className="text-sm text-text-muted">Positions will appear after agents deliberate.</p>
-            )}
             {positions.map((a) => (
               <AgentPositionCard
                 key={a.agentId}
@@ -59,36 +56,8 @@ function QuickView({ caseDoc, verdict }) {
               />
             ))}
           </div>
-          {positions.length > 0 && (
-            <button type="button" className="mt-4 text-sm text-primary hover:underline">View All Agent Positions →</button>
-          )}
         </div>
-      </div>
-
-      <div>
-        <h3 className="text-xs font-mono uppercase tracking-widest text-text-muted mb-3">Consequence Projections</h3>
-        <div className="space-y-3">
-          {[
-            { label: '6 Months', sub: 'Short-term impact', trend: 'up', tag: null },
-            { label: '1 Year', sub: 'Medium-term impact', trend: 'up', tag: 'Mostly Positive' },
-            { label: '2 Years', sub: 'Long-term impact', trend: 'mixed', tag: 'Positive with Risks' },
-          ].map((item) => (
-            <div key={item.label} className="glass-card rounded-xl p-4">
-              <div className="flex justify-between items-start">
-                <div>
-                  <p className="font-heading font-semibold text-sm">{item.label}</p>
-                  <p className="text-xs text-text-muted">{item.sub}</p>
-                </div>
-                <MiniChart trend={item.trend} />
-              </div>
-              {item.tag && <p className={`text-xs font-mono mt-2 ${item.trend === 'up' ? 'text-success' : 'text-warning'}`}>{item.tag}</p>}
-            </div>
-          ))}
-        </div>
-        <button type="button" className="mt-4 w-full py-2 text-sm border border-white/20 rounded-lg hover:border-primary/50 transition-all">
-          View Full Projections
-        </button>
-      </div>
+      )}
     </div>
   );
 }
@@ -223,6 +192,9 @@ export default function CaseView() {
           <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-2">
             <span className="text-[10px] sm:text-xs font-mono text-text-muted">CASE #{id?.slice(-4)}</span>
             {isLive && <LiveBadge />}
+            <div className="ml-auto">
+              <LanguageSwitcher compact />
+            </div>
           </div>
           <h1 className="font-heading text-lg sm:text-2xl md:text-3xl font-bold leading-tight">{caseDoc.title}</h1>
           <div className="flex flex-wrap gap-1.5 sm:gap-2 mt-2 sm:mt-3">
@@ -230,6 +202,7 @@ export default function CaseView() {
             {caseDoc.status && (
               <span className="text-[10px] sm:text-xs font-mono text-text-muted px-2 py-1 rounded bg-white/5">{caseDoc.status}</span>
             )}
+            {verdict?.decision && <VerdictBadge verdict={verdict.decision} />}
           </div>
         </header>
 
@@ -237,7 +210,7 @@ export default function CaseView() {
           {MODES.map((m) => (
             <TabButton key={m} active={mode === m} onClick={() => setMode(m)}>
               {m === 'quick' ? 'Quick' : m === 'summary' ? 'Summary' : 'Full Case'}
-              <span className="hidden sm:inline">{m === 'quick' ? ' Mode' : m === 'summary' ? ' Mode' : ' Mode'}</span>
+              <span className="hidden sm:inline"> Mode</span>
             </TabButton>
           ))}
         </ScrollTabs>
@@ -247,15 +220,22 @@ export default function CaseView() {
             {mode === 'quick' && <QuickView caseDoc={caseDoc} verdict={verdict} />}
             {mode === 'summary' && <QuickView caseDoc={caseDoc} verdict={verdict} />}
             {mode === 'full' && (
-              <FullView
-                rounds={rounds}
-                activeRound={activeRound}
-                setActiveRound={setActiveRound}
-                typingAgent={typingAgent}
-                speakingAgent={speakingAgent}
-                liveMessages={liveMessages}
-                caseId={id}
-              />
+              <>
+                {verdict?.decision && (
+                  <div className="mb-6">
+                    <RealVsAiTable caseDoc={caseDoc} verdict={verdict} />
+                  </div>
+                )}
+                <FullView
+                  rounds={rounds}
+                  activeRound={activeRound}
+                  setActiveRound={setActiveRound}
+                  typingAgent={typingAgent}
+                  speakingAgent={speakingAgent}
+                  liveMessages={liveMessages}
+                  caseId={id}
+                />
+              </>
             )}
           </motion.div>
         </AnimatePresence>

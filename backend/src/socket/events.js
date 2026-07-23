@@ -27,3 +27,13 @@ export function emitVerdictReady(payload) {
 export function emitCityActivity(message) {
   io?.emit('city:activity', { message, timestamp: new Date().toISOString() });
 }
+
+/** Fired when admin deploys top-voted posts into the AI world — feed should clear. */
+export function emitCasesDeployed(payload) {
+  io?.emit('cases:deployed', {
+    count: payload?.count || 0,
+    caseIds: payload?.caseIds || [],
+    message: payload?.message || 'Top posts moved to the AI world',
+    timestamp: new Date().toISOString(),
+  });
+}

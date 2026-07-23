@@ -21,6 +21,26 @@ const agentFinalPositionSchema = new mongoose.Schema(
   { _id: false }
 );
 
+/** Side-by-side: what happened in real life vs what Polaris decided — simple words. */
+const comparisonRowSchema = new mongoose.Schema(
+  {
+    topic: { type: String, default: '' },
+    realWorld: { type: String, default: '' },
+    aiWorld: { type: String, default: '' },
+  },
+  { _id: false }
+);
+
+const plainComparisonSchema = new mongoose.Schema(
+  {
+    bottomLine: { type: String, default: '' },
+    rows: [comparisonRowSchema],
+    /** Optional translations keyed by lang code: { hi: { bottomLine, rows }, ... } */
+    translations: { type: mongoose.Schema.Types.Mixed, default: {} },
+  },
+  { _id: false }
+);
+
 const verdictSchema = new mongoose.Schema(
   {
     caseId: { type: mongoose.Schema.Types.ObjectId, ref: 'Case', required: true, unique: true },
@@ -35,6 +55,7 @@ const verdictSchema = new mongoose.Schema(
     consequences: [consequenceSchema],
     agentPositions: [agentFinalPositionSchema],
     keyDebateMoments: [{ type: String }],
+    plainComparison: { type: plainComparisonSchema, default: () => ({}) },
   },
   { timestamps: true }
 );
