@@ -14,7 +14,7 @@ class JudgeAgent(BaseAgent):
 Deliver the final verdict with full justification. You NEVER participated in discussion rounds.
 Weigh all agent positions impartially. Output consequence projections for 6 months, 1 year, and 2 years."""
 
-    def output_schema_description(self) -> str:
+    def output_schema_description(self, round_type: str | None = None) -> str:
         return """{
   "decision": "approved|rejected|approved_with_conditions|delayed",
   "statement": "one clear verdict statement",

@@ -6,7 +6,6 @@ from typing import TypedDict
 from langgraph.graph import StateGraph, END
 
 from agents import get_agent, DISCUSSION_AGENTS
-from agents.discussion_agents import DiscussionAgent
 from memory.store import get_agent_memory, store_agent_memory
 from pipeline.backend_client import (
     notify_case_started,
@@ -47,6 +46,15 @@ def format_message(agent_id: str, output: dict, phase: str) -> dict:
         "changeReason": output.get("change_reason", ""),
         "factCheckFlags": output.get("fact_check_flags", []),
         "evidenceReferences": output.get("evidence_references", []),
+        "crossReferences": [
+            {
+                "agentId": ref.get("agent_id", ""),
+                "stance": ref.get("stance", ""),
+                "note": ref.get("note", ""),
+            }
+            for ref in output.get("cross_references", [])
+            if isinstance(ref, dict)
+        ],
         "rawOutput": output,
     }
 
@@ -114,11 +122,23 @@ async def run_discussion_round(state: PipelineState, round_num: int, phase: str,
         }
 
         if include_prior:
+            # Completed prior rounds (round1, round2, …)
             prompt_data["prior_discussion"] = {
                 k: v for k, v in prior_rounds.items() if k.startswith("round")
             }
+            # Colleagues who already spoke earlier in *this* round
+            if messages:
+                prompt_data["this_round_so_far"] = messages
+            prompt_data["instructions"] = (
+                "You are an expert among other domain experts. From Round 2 onward you may "
+                "reference colleagues who have already spoken this round (this_round_so_far) "
+                "and positions from prior rounds (prior_discussion). "
+                "When you use another expert's point, name them explicitly and state whether "
+                "you agree, disagree, or partially agree. Fill cross_references accordingly. "
+                "Stay grounded in your own expertise — borrow insight, do not abandon your domain."
+            )
 
-        output = await agent.invoke(json.dumps(prompt_data))
+        output = await agent.invoke(json.dumps(prompt_data), round_type=phase)
         msg = format_message(agent_id, output, phase)
         messages.append(msg)
 

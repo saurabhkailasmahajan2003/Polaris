@@ -13,7 +13,7 @@ class FactCheckerAgent(BaseAgent):
         return """Verify all claims in the evidence package. Flag anything unsupported or disputed.
 Produce a verified evidence package marking each fact as verified, disputed, or unverified."""
 
-    def output_schema_description(self) -> str:
+    def output_schema_description(self, round_type: str | None = None) -> str:
         return """{
   "verified_evidence": {
     "verified_facts": [{"fact": "", "evidence_ref": "", "status": "verified|disputed|unverified"}],

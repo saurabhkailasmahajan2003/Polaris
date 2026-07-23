@@ -14,9 +14,25 @@ class DiscussionAgent(BaseAgent):
   "evidence_references": ["ref1"],
   "fact_check_flags": []
 }"""
+        if round_type == "round1":
+            return base
+
+        # Rounds 2+: structured cross-references to colleagues in this round
+        extras = (
+            ',\n  "cross_references": ['
+            '{"agent_id": "colleague_agent_id", '
+            '"stance": "agree|disagree|partially_agree", '
+            '"note": "what you take from their point"}]'
+        )
         if round_type == "round4":
-            return base.replace("}", ',\n  "view_changed": true|false,\n  "change_reason": "why view changed or remained same"\n}')
-        return base
+            extras += (
+                ',\n  "view_changed": true|false,'
+                '\n  "change_reason": "why view changed or remained same"'
+            )
+        return base.replace("}", extras + "\n}")
+
+    def output_schema_description(self, round_type: str | None = None) -> str:
+        return self.discussion_schema(round_type or "round1")
 
 
 class EconomistAgent(DiscussionAgent):
@@ -30,9 +46,6 @@ class EconomistAgent(DiscussionAgent):
     def system_prompt(self) -> str:
         return "Analyze economic and financial implications. Model costs, benefits, and market effects."
 
-    def output_schema_description(self) -> str:
-        return self.discussion_schema("round1")
-
 
 class LegalExpertAgent(DiscussionAgent):
     agent_id = "legal_expert"
@@ -44,9 +57,6 @@ class LegalExpertAgent(DiscussionAgent):
 
     def system_prompt(self) -> str:
         return "Analyze legal dimensions, rights implications, and precedent applicability."
-
-    def output_schema_description(self) -> str:
-        return self.discussion_schema("round1")
 
 
 class EthicsExpertAgent(DiscussionAgent):
@@ -60,9 +70,6 @@ class EthicsExpertAgent(DiscussionAgent):
     def system_prompt(self) -> str:
         return "Analyze moral dimensions and human impact of the case decision."
 
-    def output_schema_description(self) -> str:
-        return self.discussion_schema("round1")
-
 
 class PoliticalAnalystAgent(DiscussionAgent):
     agent_id = "political_analyst"
@@ -74,9 +81,6 @@ class PoliticalAnalystAgent(DiscussionAgent):
 
     def system_prompt(self) -> str:
         return "Analyze governance, policy, and power dynamics without political bias."
-
-    def output_schema_description(self) -> str:
-        return self.discussion_schema("round1")
 
 
 class HumanRightsExpertAgent(DiscussionAgent):
@@ -90,9 +94,6 @@ class HumanRightsExpertAgent(DiscussionAgent):
     def system_prompt(self) -> str:
         return "Analyze civil liberties and human rights implications of all positions."
 
-    def output_schema_description(self) -> str:
-        return self.discussion_schema("round1")
-
 
 class TechnologyExpertAgent(DiscussionAgent):
     agent_id = "technology_expert"
@@ -105,9 +106,6 @@ class TechnologyExpertAgent(DiscussionAgent):
     def system_prompt(self) -> str:
         return "Analyze technology, cyber, AI, and infrastructure implications."
 
-    def output_schema_description(self) -> str:
-        return self.discussion_schema("round1")
-
 
 class PsychologistAgent(DiscussionAgent):
     agent_id = "psychologist"
@@ -119,6 +117,3 @@ class PsychologistAgent(DiscussionAgent):
 
     def system_prompt(self) -> str:
         return "Analyze public behavior, social impact, and psychological consequences."
-
-    def output_schema_description(self) -> str:
-        return self.discussion_schema("round1")

@@ -14,7 +14,7 @@ class InvestigatorAgent(BaseAgent):
 Build a comprehensive evidence package with: key facts, timeline, sources, and open questions.
 Do not form opinions — only gather and structure evidence."""
 
-    def output_schema_description(self) -> str:
+    def output_schema_description(self, round_type: str | None = None) -> str:
         return """{
   "evidence_package": {
     "key_facts": ["fact1", "fact2"],

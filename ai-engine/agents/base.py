@@ -49,10 +49,10 @@ class BaseAgent(ABC):
         pass
 
     @abstractmethod
-    def output_schema_description(self) -> str:
+    def output_schema_description(self, round_type: str | None = None) -> str:
         pass
 
-    def build_system_prompt(self) -> str:
+    def build_system_prompt(self, round_type: str | None = None) -> str:
         return f"""You are {self.name}, the {self.role} in Polaris — a digital civilization of expert AI agents.
 
 EXPERTISE: {', '.join(self.expertise)}
@@ -64,10 +64,15 @@ REASONING STYLE: {self.reasoning_style}
 {BASE_RULES}
 
 OUTPUT FORMAT (JSON only):
-{self.output_schema_description()}
+{self.output_schema_description(round_type)}
 """
 
-    async def invoke(self, user_message: str, temperature: float = 0.3) -> dict[str, Any]:
+    async def invoke(
+        self,
+        user_message: str,
+        temperature: float = 0.3,
+        round_type: str | None = None,
+    ) -> dict[str, Any]:
         if not os.getenv("OPENAI_API_KEY"):
             return self._mock_response(user_message)
 
@@ -75,7 +80,7 @@ OUTPUT FORMAT (JSON only):
             model=MODEL,
             temperature=temperature,
             messages=[
-                {"role": "system", "content": self.build_system_prompt()},
+                {"role": "system", "content": self.build_system_prompt(round_type=round_type)},
                 {"role": "user", "content": user_message},
             ],
         )

@@ -17,6 +17,17 @@ const agentMessageSchema = new mongoose.Schema(
     changeReason: { type: String, default: '' },
     factCheckFlags: [{ type: String }],
     evidenceReferences: [{ type: String }],
+    crossReferences: [
+      {
+        agentId: { type: String, default: '' },
+        stance: {
+          type: String,
+          enum: ['agree', 'disagree', 'partially_agree', ''],
+          default: '',
+        },
+        note: { type: String, default: '' },
+      },
+    ],
     rawOutput: { type: mongoose.Schema.Types.Mixed, default: {} },
   },
   { _id: false }
